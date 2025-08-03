@@ -28,10 +28,12 @@ import AlertDescription from './components/ui/alert/AlertDescription.vue';
 import { Check, OctagonX } from 'lucide-vue-next';
 import { useThemeStore } from './lib/logic/themestore';
 import { set_theme } from './lib/logic/settings';
+import { useI18n } from 'vue-i18n';
+import { useLocaleStore } from './lib/logic/locales';
 let show_anim = ref(true);
 let error = ref('');
 let notification = ref('');
-
+let locale = useI18n();
 listen('error', (event) => {
   error.value = event.payload;
   console.log(error.value)
@@ -59,6 +61,8 @@ onMounted(async () => {
     router.push('setup');
   }
 
+  locale.locale.value = useLocaleStore().current;
+
   setTimeout(() => { show_anim.value = false }, 1500);
 
 })
@@ -70,12 +74,12 @@ onMounted(async () => {
   </main>
   <Alert class="alert" v-if="error != ''" @click="error = ''">
     <OctagonX />
-      <AlertTitle>{{ $t('notifications.error')}}</AlertTitle>
+    <AlertTitle>{{ $t('notifications.error') }}</AlertTitle>
     <AlertDescription>{{ error }}</AlertDescription>
   </Alert>
   <Alert class="notification" v-if="notification != ''" @click="notification = ''">
     <Check />
-      <AlertTitle>{{ $t('notifications.warning')}}</AlertTitle>
+    <AlertTitle>{{ $t('notifications.warning') }}</AlertTitle>
     <AlertDescription>{{ notification }}</AlertDescription>
   </Alert>
 </template>

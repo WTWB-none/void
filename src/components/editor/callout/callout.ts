@@ -26,7 +26,8 @@ import {
   RangeSetBuilder,
   StateEffect,
   Extension,
-  Facet
+  Facet,
+  EditorSelection
 } from '@codemirror/state';
 import { EditorView as NestedEditorView } from 'codemirror';
 import { quotePlugin } from '../quote/quote';
@@ -49,7 +50,7 @@ class CalloutWidget extends WidgetType {
     super();
   }
 
-  toDOM(): HTMLElement {
+  toDOM(view: EditorView): HTMLElement {
     const box = document.createElement('div');
     box.className = `cm-callout callout-${this.tag.toLowerCase()}`;
 
@@ -101,11 +102,22 @@ class CalloutWidget extends WidgetType {
 
     box.appendChild(headerEl);
     box.appendChild(bodyEl);
+    if (!view.state.facet(IsNestedEditor)) {
+      box.addEventListener('click', () => {
+        view.dispatch(view.state.update({
+          selection: EditorSelection.cursor(this.from),
+          scrollIntoView: true,
+        }))
+        console.log(this.from);
+        console.log(view.state.selection.main.head);
+      })
+    }
     return box;
   }
 
-  ignoreEvent(): boolean {
-    return false;
+  ignoreEvent(event: Event): boolean {
+    const target = event.target as HTMLElement;
+    return !!(target.closest('.cm-callout') && !target.closest('input'));
   }
 }
 
@@ -168,7 +180,7 @@ function buildCalloutDecorations(state: EditorState, view: EditorView): Decorati
   for (const { from, to, tag, header, body } of callouts) {
     const inside = sel.from >= from && sel.from <= to;
     if (!inside) {
-      if (view.state.facet(IsNestedEditor) || (sel.from < view.state.doc.lineAt(from - 1).from || sel.from > view.state.doc.lineAt(to + 1).to)) {
+      if (view.state.facet(IsNestedEditor)) {
         builder.add(
           from,
           to,
@@ -185,6 +197,7 @@ function buildCalloutDecorations(state: EditorState, view: EditorView): Decorati
           to,
           Decoration.replace({
             widget: new CalloutWidget(tag, header, body, from, to, view),
+            block: true,
             side: 1
           })
         );
