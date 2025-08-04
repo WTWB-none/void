@@ -46,7 +46,7 @@ class CodeBlockWidget extends WidgetType {
       copyButton.style.display = 'none';
     });
 
-    body.addEventListener('click', (e) => {
+    body.addEventListener('click', () => {
       view.dispatch(view.state.update({
         selection: EditorSelection.cursor(this.from),
       }))
