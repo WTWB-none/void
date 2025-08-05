@@ -14,8 +14,8 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   limitations under the License.
 -->
 <template>
-  <div class="w-full h-full overflow-hidden">
-    <CodeMirror :extensions="extensions" v-model="content" ref="Editor" class="editor h-full" />
+  <div class="w-full h-full pt-[3em] pl-[3em] pr-[3em]">
+    <CodeMirror :extensions="extensions" v-model="content" ref="Editor" class="editor" />
   </div>
 </template>
 <script setup lang="ts">
@@ -47,14 +47,4 @@ onMounted(async () => {
   content.value = await get_note(decodeURIComponent(atob(props.url)));
 })
 </script>
-<style>
-.editor {
-  border: none;
-  outline: none;
-  margin: 3em;
-}
-
-:focus {
-  outline: none;
-}
-</style>
+<style></style>
