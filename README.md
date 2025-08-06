@@ -15,7 +15,8 @@ I could never find an app that combined all my needs as a second-brain tool. And
 
 ## 📝 How to install and run VOID
 
-> 🛠 **Note**: Rust is required for all systems.
+> 🛠 **Note**: Rust is required for all systems. 
+> WARNING gcc-14 required for build. If you use gcc-15 or version below 14 you need to downgrade/update your gcc up to 14 version. This limitation caused by surrealdb and cannot be bypassed untill surrealdb update their version of librocksdb-sys. Thanks for understanding.
 
 ### 1. Clone the repository
 
@@ -231,7 +232,7 @@ Everyone who supports the project will be mentioned on the official site and in 
 ## Socials
 You can check our updates in 
 [Telegram](https://t.me/void_project_tg)
-[Reddit](https://reddit.com/r/void_project)
+[Reddit](https://reddit.com/r/void_foss)
 [X](https://x.com/void_project_x)
 
 ## 📄 License
