@@ -58,7 +58,7 @@ class CalloutWidget extends WidgetType {
 
   // Создаем уникальный ключ для кеширования
   get cacheKey(): string {
-    return `${this.from}-${this.to}-${this.tag}-${this.header}-${this.body}`;
+    return `${this.from}-${this.to}-${this.tag}-${this.header}}`;
   }
 
   eq(other: CalloutWidget): boolean {
@@ -150,7 +150,7 @@ class CalloutWidget extends WidgetType {
         return a.includes('[');
       }).length) * view.defaultLineHeight + (this.body.split('\n').filter((a) => {
         return a.includes('[');
-      }).length * 90);
+      }).length * 80);
       if (this.body.split('\n').filter((el) => {
         return el.includes('[');
       }).length == 0) {
@@ -281,7 +281,7 @@ function buildCalloutDecorations(state: EditorState, view: EditorView): Decorati
 }
 
 const calloutDecorationField = StateField.define<DecorationSet>({
-  create(state) {
+  create() {
     return Decoration.none;
   },
   update(deco, tr) {

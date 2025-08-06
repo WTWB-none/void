@@ -193,7 +193,7 @@ function initiate_copy(name) {
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
                   <Folder />
-                                    <span class="text-lg cursor-pointer" @click="expanded = !expanded">{{ $t('common.explorer') }}</span>
+                  <span class="text-lg cursor-pointer" @click="expanded = !expanded">{{ $t('common.explorer') }}</span>
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <ExplorerMenu :copied="copied != ''"
@@ -307,7 +307,7 @@ function initiate_copy(name) {
           </CollapsibleRoot>
         </SidebarMenu>
       </SidebarGroupContent>
-            <SidebarGroupLabel class="select-none">{{ $t('common.tools')}}</SidebarGroupLabel>
+      <SidebarGroupLabel class="select-none">{{ $t('common.tools') }}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu v-for="plugin in plugins" :key="plugin">
           <SidebarMenuItem>

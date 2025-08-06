@@ -36,4 +36,3 @@ createApp(App).use(router).use(pinia).use(VueVirtualScroller).use(i18n).use(VueP
   }
 }).mount("#app");
 
-module.exports = messages;

@@ -26,17 +26,17 @@ const uname = ref("");
 const pic = ref();
 const showCard = ref(true);
 const workdir = ref("");
-const settings_type = ref('');
+const settings_type = ref("");
 const settingsComponent = ref<Component | null>(null);
-const componentModules = import.meta.glob('./*.vue');
+const componentModules = import.meta.glob("./*.vue");
 const componentMap: Record<string, () => Promise<any>> = {};
 for (const path in componentModules) {
-  const name = path.split('/').pop()?.replace('.vue', '')!;
+  const name = path.split("/").pop()?.replace(".vue", "")!;
   componentMap[name] = componentModules[path];
 }
 
 async function get_settings(name: string): Promise<Component> {
-  if (!name || name === 'Global') return Global;
+  if (!name || name === "Global") return Global;
   const loader = componentMap[name];
   if (!loader) {
     console.warn(`Component '${name}' not found`);
@@ -57,7 +57,7 @@ onMounted(async () => {
   const profile_pic = workdir.value + "/profile.png";
   pic.value = await get_file_content(profile_pic);
 
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     showCard.value = checkShowable();
   });
 });
@@ -71,8 +71,14 @@ onMounted(async () => {
       <Card :uname="uname" :pic="pic" />
     </div>
     <div class="fixed right-[6%] top-[15%]">
-      <SettingsSelector v-model="settings_type"
-        @select="async () => { settingsComponent = await get_settings(settings_type) }" />
+      <SettingsSelector
+        v-model="settings_type"
+        @select="
+          async () => {
+            settingsComponent = await get_settings(settings_type);
+          }
+        "
+      />
     </div>
   </div>
 </template>
