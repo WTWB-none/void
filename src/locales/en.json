@@ -46,14 +46,16 @@
   "settingsSelector": {
     "settingsLabel": "Settings",
     "general": "General",
-    "sideRepos": "Custom Repositories"
+    "sideRepos": "Custom Repositories",
+    "language": "Language"
   },
   "settingsHeaders": {
     "installedRepos": "Installed Repos",
     "changeWorkdir": "Change working directory",
     "installPlugins": "Install plugins",
     "selectTheme": "Select theme",
-    "installedThemes": "Installed themes"
+    "installedThemes": "Installed themes",
+    "changeLocale": "Select language"
   },
   "settingsButtons": {
     "change": "Change",

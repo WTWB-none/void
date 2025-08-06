@@ -7,3 +7,4 @@
 Egor Schelkonogov <ghostoftranshumanist@gmail.com>
 Alexandr Borisov <ragalik754.lug@gmail.com>
 Dmitry Momzhiyan <vash.coder@yandex.ru>
+Dmitry Pilshikov <dimapilamail@gmail.com>

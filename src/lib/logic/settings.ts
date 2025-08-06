@@ -19,6 +19,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { useThemeStore } from "./themestore";
 import { Component } from "vue";
+import { useI18n } from "vue-i18n";
 
 export type Theme = {
   theme_name: string,
@@ -140,4 +141,9 @@ export async function update(name: string) {
 
 export async function delete_theme(name: String) {
   await invoke("delete_theme", { themeName: name });
+}
+
+export function set_locale(store: any, locale: string) {
+  store.changeLocale(locale);
+  useI18n().locale.value = locale;
 }

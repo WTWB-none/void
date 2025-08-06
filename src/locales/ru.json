@@ -3,13 +3,14 @@
     "home": "Домой",
     "graph": "Граф",
     "terminal": "Терминал",
-    "canvas": "Холст",
+    "canvas": "Canvas",
     "explorer": "Проводник",
     "settings": "Настройки",
     "tools": "Инструменты",
     "general": "Общие",
     "download": "Загрузить",
-    "letsGo": "Поехали"
+    "letsGo": "Поехали",
+    "extAndCustomization": "Расширения и кастомизация"
   },
   "contextMenu": {
     "createFile": "Создать файл",
@@ -42,16 +43,18 @@
     "moreFreedom": "Хочется больше свободы?"
   },
   "settingsSelector": {
-    "settingssLabel": "Настройки",
+    "settingsLabel": "Настройки",
     "general": "Общие",
-    "sideRepos": "Кастомные репозитории"
+    "sideRepos": "Кастомные репозитории",
+    "language": "Выберите язык программы"
   },
   "settingsHeaders": {
     "installedRepos": "Установленные репозитории",
     "changeWorkdir": "Изменить рабочую директорию",
-    "installPlugins": "установить расширения",
-    "selectTheme": "выбрать тему",
-    "installedThemes": "установленные темы"
+    "installPlugins": "Установить расширения",
+    "selectTheme": "Выбрать тему",
+    "installedThemes": "Установленные темы",
+    "changeLocale": "Изменить язык"
   },
   "settingsButtons": {
     "change": "Изменить",

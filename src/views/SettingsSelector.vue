@@ -22,13 +22,16 @@ import SelectItem from '@/components/ui/select/SelectItem.vue';
 import SelectLabel from '@/components/ui/select/SelectLabel.vue';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
-import { useI18n } from 'vue-i18n';
-let { t } = useI18n();
+import { useLocaleStore } from '@/lib/logic/locales';
+import { ref, watch } from 'vue';
+let locale = useLocaleStore();
+let selectorUpdater = ref('');
+watch(() => locale.current, () => { selectorUpdater.value = locale.current });
 </script>
 <template>
-  <Select>
+  <Select :key="selectorUpdater">
     <SelectTrigger>
-      <SelectValue :placeholder="t('settingsSelector.settingsLabel')" />
+      <SelectValue :placeholder="$t('settingsSelector.settingsLabel')" />
     </SelectTrigger>
     <SelectContent>
       <SelectGroup>

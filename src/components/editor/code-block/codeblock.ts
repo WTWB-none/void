@@ -13,19 +13,21 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-import { EditorState, RangeSetBuilder, StateField } from '@codemirror/state';
+import { EditorSelection, EditorState, RangeSetBuilder, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 import { codeToHtml } from 'shiki';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 class CodeBlockWidget extends WidgetType {
-  constructor(private readonly lang: string, private readonly code: string) {
+  constructor(private readonly lang: string, private readonly code: string, private readonly from: number) {
     super()
   }
   toDOM(view: EditorView): HTMLElement {
     let el = document.createElement('div');
     let copyButton = document.createElement('div');
     let language = document.createElement('div');
+    let body = document.createElement('div');
+    body.className = 'cm-code-body';
     language.textContent = this.lang;
     language.className = 'cm-code-lang';
     copyButton.className = 'cm-code-button';
@@ -42,28 +44,29 @@ class CodeBlockWidget extends WidgetType {
     el.addEventListener('mouseleave', () => {
       language.style.display = '';
       copyButton.style.display = 'none';
-    })
+    });
+
+    body.addEventListener('click', () => {
+      view.dispatch(view.state.update({
+        selection: EditorSelection.cursor(this.from),
+      }))
+      console.log('done');
+    });
     codeToHtml(this.code, {
       lang: this.lang.toLowerCase(),
       theme: 'catppuccin-mocha',
     }).then((v) => {
-      el.innerHTML = v;
+      body.innerHTML = v;
       el.appendChild(copyButton);
       el.appendChild(language);
+      el.appendChild(body);
     }, null);
     el.className = 'cm-code';
-    el.addEventListener('click', (e) => {
-      const isInteractive = (e.target as HTMLElement)?.closest('.cm-code');
-      if (isInteractive) {
-        e.stopPropagation(); // важно
-        setTimeout(() => view.focus(), 0); // вернуть фокус редактору
-      }
-    });
     return el;
   }
   ignoreEvent(event: Event): boolean {
     const target = event.target as HTMLElement;
-    return !!target.closest('.cm-code-button');
+    return !!target.closest('.cm-code-button') || !!target.closest('.cm-code-body');
   }
 }
 
@@ -103,8 +106,7 @@ function parseCodeblock(state: EditorState): DecorationSet {
             to,
             Decoration.replace(
               {
-                widget: new CodeBlockWidget(lang, code),
-                block: true,
+                widget: new CodeBlockWidget(lang, code, from),
                 side: 1
               }
             )
@@ -116,7 +118,7 @@ function parseCodeblock(state: EditorState): DecorationSet {
             to,
             Decoration.replace(
               {
-                widget: new CodeBlockWidget(lang, code),
+                widget: new CodeBlockWidget(lang, code, from),
                 side: 1
               }
             )

@@ -15,7 +15,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { update, get_installed_themes_list, delete_theme } from "@/lib/logic/settings";
+import { update, get_installed_themes_list, delete_theme, set_theme } from "@/lib/logic/settings";
 import SettingsSelector from "../components/ui/settings/SettingsSelector.vue";
 import SettingsHeader from '@/components/ui/settings/SettingsHeader.vue';
 import SettingsButton from '@/components/ui/settings/SettingsButton.vue';
@@ -68,13 +68,14 @@ onMounted(async () => {
     <p> {{ $t('plugins.collect') }} void!</p>
   </div>
   <SettingsHeader :value="t('settingsHeaders.installPlugins')" />
-  <SettingsHeader :value="t('settingsHeaders.selectTheme')" />
   <SettingsComposition>
     <h2> {{ $t('plugins.moreFreedom') }}</h2>
     <SettingsButton :name="t('settingsButtons.installPlugins')" @click="async () => { getThemesMarketplace() }" />
   </SettingsComposition>
+  <SettingsHeader :value="t('settingsHeaders.selectTheme')" />
   <SettingsComposition>
-    <SettingsSelector selectorPlaceholder="Темы" :currentVal="theme" :valList="listOfThemes" v-model="theme" />
+    <SettingsSelector selectorPlaceholder="Темы" :currentVal="theme" :valList="listOfThemes" v-model="theme"
+      :exec-fn="set_theme" />
   </SettingsComposition>
   <SettingsHeader :value="t('settingsHeaders.installedThemes')" />
   <div class="installed-themes-table">

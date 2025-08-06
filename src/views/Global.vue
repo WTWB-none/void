@@ -21,19 +21,35 @@ import SettingsHeader from "@/components/ui/settings/SettingsHeader.vue";
 import SettingsField from "@/components/ui/settings/SettingsField.vue";
 import SettingsComposition from "@/components/ui/settings/SettingsComposition.vue";
 import { useI18n } from 'vue-i18n';
-let { t } = useI18n();
+import SettingsSelector from "@/components/ui/settings/SettingsSelector.vue";
+import { useLocaleStore } from "@/lib/logic/locales";
+import SettingsSeparator from "@/components/ui/settings/SettingsSeparator.vue";
 let workdir = ref("");
+let listOfLocales = ref(useI18n().availableLocales);
+let store = useI18n();
+let locale = useLocaleStore()
 onMounted(async () => {
   workdir.value = await getWorkdir();
+  console.log(listOfLocales.value);
 });
+function set_locale(val: string) {
+  locale.changeLocale(val);
+  store.locale.value = val;
+}
 
 </script>
 
 <template>
   <h1 class="text-4xl text-center text-accent mt-2">{{ $t('common.general') }}</h1>
-  <SettingsHeader :value="t('settingsHeaders.changeWorkdir')" />
+  <SettingsHeader :value="$t('settingsHeaders.changeWorkdir')" />
   <SettingsComposition>
     <SettingsField :placeholder="workdir" />
-    <SettingsButton @click="async () => { workdir = await changeWorkdir(); }" :name="t('settingsButtons.change')" />
+    <SettingsButton @click="async () => { workdir = await changeWorkdir(); }" :name="$t('settingsButtons.change')" />
+  </SettingsComposition>
+  <SettingsSeparator />
+  <SettingsComposition>
+    <div>{{ $t('settingsHeaders.changeLocale') }}</div>
+    <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
+      :current-val="locale.current" :exec-fn="set_locale" />
   </SettingsComposition>
 </template>

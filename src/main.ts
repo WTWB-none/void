@@ -9,7 +9,6 @@ import 'vue-plyr/dist/vue-plyr.css';
 import '@excalidraw/excalidraw/index.css'
 import en from './locales/en.json'
 import ru from './locales/ru.json'
-
 const messages = {
   "en": en,
   "ru": ru
@@ -37,4 +36,3 @@ createApp(App).use(router).use(pinia).use(VueVirtualScroller).use(i18n).use(VueP
   }
 }).mount("#app");
 
-module.exports = messages;
