@@ -58,7 +58,7 @@ class CalloutWidget extends WidgetType {
 
   // Создаем уникальный ключ для кеширования
   get cacheKey(): string {
-    return `${this.from}-${this.to}-${this.tag}-${this.header}}`;
+    return `${this.tag}-${this.header}-${this.body}`;
   }
 
   eq(other: CalloutWidget): boolean {
@@ -91,10 +91,10 @@ class CalloutWidget extends WidgetType {
         parent: bodyEl,
         extensions: [
           IsNestedEditor.of(true),
+          combinedListPlugin,
           calloutExtension,
           quotePlugin,
           inlinePlugin,
-          combinedListPlugin,
           hashtagField,
           NestedEditorView.editable.of(false),
           NestedEditorView.updateListener.of((update: ViewUpdate) => {
@@ -129,6 +129,8 @@ class CalloutWidget extends WidgetType {
       });
     }
 
+
+
     if (!view.state.facet(IsNestedEditor)) {
       const editButton = document.createElement('div');
       editButton.className = 'callout-edit';
@@ -146,13 +148,13 @@ class CalloutWidget extends WidgetType {
     box.style.overflow = 'hidden';
 
     if (!view.state.facet(IsNestedEditor)) {
-      let estimatedHeight = (this.body.split('\n').length + 1 + this.body.split('\n').filter((a) => {
-        return a.includes('[');
+      let estimatedHeight = (this.body.split('\n').length + 2 + this.body.split('\n').filter((a) => {
+        return a.includes('> [!');
       }).length) * view.defaultLineHeight + (this.body.split('\n').filter((a) => {
-        return a.includes('[');
-      }).length * 80);
+        return a.includes('> [!');
+      }).length * 75);
       if (this.body.split('\n').filter((el) => {
-        return el.includes('[');
+        return el.includes('> [!');
       }).length == 0) {
         estimatedHeight += 40;
       }
@@ -210,6 +212,10 @@ function parseCallouts(state: EditorState): CalloutData[] {
   const bodyRegex = /^>\s(?!\[)(?<body>.*)/;
 
   while (i < lines.length) {
+    console.log(
+      'first char code:', lines[i].charCodeAt(1),
+      'line text:', JSON.stringify(lines[i])
+    );
     const headerMatch = lines[i].match(headerRegex);
     if (!headerMatch?.groups) {
       i++;
@@ -264,6 +270,21 @@ function buildCalloutDecorations(state: EditorState, view: EditorView): Decorati
 
       if (!widget) {
         widget = new CalloutWidget(tag, header, body, from, to, view);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       }
 
       builder.add(
@@ -281,7 +302,7 @@ function buildCalloutDecorations(state: EditorState, view: EditorView): Decorati
 }
 
 const calloutDecorationField = StateField.define<DecorationSet>({
-  create() {
+  create(state) {
     return Decoration.none;
   },
   update(deco, tr) {
@@ -397,13 +418,8 @@ export const calloutExtension: Extension = [
   })
 ];
 
-const IsNestedEditor = Facet.define<boolean, boolean>({
+
+export const IsNestedEditor = Facet.define<boolean, boolean>({
   combine: values => values.length ? values[0] : false
 });
 
-// Очистка кеша при необходимости
-export function clearCalloutCache() {
-  calloutWidgetCache.clear();
-  lastDocVersion = 0;
-  cachedCallouts = [];
-}
