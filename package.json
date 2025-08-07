@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "test": "vitest"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
@@ -46,6 +47,7 @@
     "tw-animate-css": "^1.2.5",
     "universal-cookie": "^7.2.2",
     "veaury": "^2.6.2",
+    "vitest": "^3.2.4",
     "vue": "^3.5.13",
     "vue-codemirror6": "^1.3.22",
     "vue-i18n": "^11.1.10",
