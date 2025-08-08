@@ -18,7 +18,8 @@ import {
   DecorationSet,
   EditorView,
   WidgetType,
-  ViewUpdate
+  ViewUpdate,
+  keymap,
 } from '@codemirror/view';
 import {
   StateField,
@@ -34,156 +35,8 @@ import { quotePlugin } from '../quote/quote';
 import { inlinePlugin } from '../inline/inline';
 import { combinedListPlugin } from '../lists/lists';
 import { hashtagField } from '../tags/tags';
-import { keymap } from '@codemirror/view';
 
 const updateCalloutEffect = StateEffect.define<DecorationSet>();
-
-// Кеш для виджетов callout
-const calloutWidgetCache = new Map<string, CalloutWidget>();
-
-class CalloutWidget extends WidgetType {
-  private nestedView?: NestedEditorView;
-  private domElement?: HTMLElement;
-
-  constructor(
-    private readonly tag: string,
-    private readonly header: string,
-    private readonly body: string,
-    private readonly from: number,
-    private readonly to: number,
-    private readonly outerView: EditorView
-  ) {
-    super();
-  }
-
-  // Создаем уникальный ключ для кеширования
-  get cacheKey(): string {
-    return `${this.tag}-${this.header}-${this.body}`;
-  }
-
-  eq(other: CalloutWidget): boolean {
-    return this.cacheKey === other.cacheKey;
-  }
-
-  toDOM(view: EditorView): HTMLElement {
-    // Проверяем кеш
-    const cached = calloutWidgetCache.get(this.cacheKey);
-    if (cached?.domElement) {
-      return cached.domElement;
-    }
-
-    const box = document.createElement('div');
-    const line = document.createElement('div');
-    line.className = 'cm-line';
-    box.className = `cm-callout callout-${this.tag.toLowerCase()}`;
-
-    const headerEl = document.createElement('div');
-    headerEl.className = 'callout-header';
-    headerEl.textContent = this.header || this.tag;
-
-    const bodyEl = document.createElement('div');
-    bodyEl.className = 'callout-body';
-
-    // Создаем nested view только если его еще нет
-    if (!this.nestedView) {
-      this.nestedView = new NestedEditorView({
-        doc: this.body,
-        parent: bodyEl,
-        extensions: [
-          IsNestedEditor.of(true),
-          combinedListPlugin,
-          calloutExtension,
-          quotePlugin,
-          inlinePlugin,
-          hashtagField,
-          NestedEditorView.editable.of(false),
-          NestedEditorView.updateListener.of((update: ViewUpdate) => {
-            if (update.docChanged) {
-              const newText = update.state.doc.toString();
-              this.outerView.dispatch({
-                changes: {
-                  from: this.from,
-                  to: this.to,
-                  insert:
-                    `> [!${this.tag}] ${this.header}\n` +
-                    newText
-                      .split('\n')
-                      .map(line => `> ${line}`)
-                      .join('\n')
-                }
-              });
-            }
-          })
-        ]
-      });
-
-      // Обновляем decorations для nested view асинхронно
-      requestAnimationFrame(() => {
-        if (this.nestedView) {
-          this.nestedView.dispatch({
-            effects: updateCalloutEffect.of(
-              buildCalloutDecorations(this.nestedView.state, this.nestedView)
-            )
-          });
-        }
-      });
-    }
-
-
-
-    if (!view.state.facet(IsNestedEditor)) {
-      const editButton = document.createElement('div');
-      editButton.className = 'callout-edit';
-      editButton.addEventListener('click', () => {
-        view.dispatch(view.state.update({
-          selection: EditorSelection.cursor(this.to),
-          scrollIntoView: true,
-        }))
-      });
-      box.appendChild(editButton);
-    }
-
-    box.appendChild(headerEl);
-    box.appendChild(bodyEl);
-    box.style.overflow = 'hidden';
-
-    if (!view.state.facet(IsNestedEditor)) {
-      let estimatedHeight = (this.body.split('\n').length + 2 + this.body.split('\n').filter((a) => {
-        return a.includes('> [!');
-      }).length) * view.defaultLineHeight + (this.body.split('\n').filter((a) => {
-        return a.includes('> [!');
-      }).length * 75);
-      if (this.body.split('\n').filter((el) => {
-        return el.includes('> [!');
-      }).length == 0) {
-        estimatedHeight += 40;
-      }
-      box.style.setProperty('height', `${estimatedHeight}px`, 'important');
-    }
-
-    line.appendChild(box);
-    this.domElement = line;
-
-    // Сохраняем в кеш
-    calloutWidgetCache.set(this.cacheKey, this);
-
-    return line;
-  }
-
-  ignoreEvent(event: Event): boolean {
-    const target = event.target as HTMLElement;
-    return !!target.closest('.callout-edit');
-  }
-
-  destroy() {
-    if (this.nestedView) {
-      this.nestedView.destroy();
-      this.nestedView = undefined;
-    }
-    calloutWidgetCache.delete(this.cacheKey);
-    this.domElement = undefined;
-  }
-}
 
 interface CalloutData {
   from: number;
@@ -193,38 +46,26 @@ interface CalloutData {
   body: string;
 }
 
-// Кеш для парсинга callouts
-let lastDocVersion = 0;
+let lastDocRef: any = null;
 let cachedCallouts: CalloutData[] = [];
 
 function parseCallouts(state: EditorState): CalloutData[] {
-  // Проверяем, изменился ли документ
-  const currentVersion = state.doc.length; // Простая проверка
-  if (currentVersion === lastDocVersion && cachedCallouts.length > 0) {
+  if (lastDocRef === state.doc && cachedCallouts.length > 0) {
     return cachedCallouts;
   }
 
   const lines = state.doc.toString().split('\n');
   const result: CalloutData[] = [];
-  let i = 0;
-
   const headerRegex = /^>\s*\[!(?<tag>[A-Z]+)\](?<header>.*)/;
   const bodyRegex = /^>\s(?!\[)(?<body>.*)/;
 
-  while (i < lines.length) {
-    console.log(
-      'first char code:', lines[i].charCodeAt(1),
-      'line text:', JSON.stringify(lines[i])
-    );
+  for (let i = 0; i < lines.length;) {
     const headerMatch = lines[i].match(headerRegex);
-    if (!headerMatch?.groups) {
-      i++;
-      continue;
-    }
+    if (!headerMatch?.groups) { i++; continue; }
 
     const tag = headerMatch.groups.tag;
     const header = headerMatch.groups.header.trim();
-    const bodyLines = [];
+    const bodyLines: string[] = [];
     const fromLine = i;
     let toLine = i;
 
@@ -238,22 +79,140 @@ function parseCallouts(state: EditorState): CalloutData[] {
     const from = state.doc.line(fromLine + 1).from;
     const to = state.doc.line(toLine + 1).to;
 
-    result.push({
-      from,
-      to,
-      tag,
-      header,
-      body: bodyLines.join('\n')
-    });
-
+    result.push({ from, to, tag, header, body: bodyLines.join('\n') });
     i = toLine + 1;
   }
 
-  // Кешируем результат
-  lastDocVersion = currentVersion;
+  lastDocRef = state.doc;
   cachedCallouts = result;
-
   return result;
+}
+
+class CalloutWidget extends WidgetType {
+  private nestedView?: NestedEditorView;
+  private rootEl?: HTMLElement;
+
+  constructor(
+    private readonly tag: string,
+    private readonly header: string,
+    private readonly body: string,
+    private readonly outerView: EditorView
+  ) {
+    super();
+  }
+
+  eq(other: CalloutWidget): boolean {
+    return this.tag === other.tag && this.header === other.header && this.body === other.body;
+  }
+
+  private findMyRange(): { from: number; to: number } | null {
+    if (!this.rootEl) return null;
+    const pos = this.outerView.posAtDOM(this.rootEl);
+    if (pos < 0) return null;
+    const found = parseCallouts(this.outerView.state).find(c => pos >= c.from && pos <= c.to);
+    return found ? { from: found.from, to: found.to } : null;
+  }
+
+  toDOM(view: EditorView): HTMLElement {
+    const line = document.createElement('div');
+    line.className = 'cm-line';
+    this.rootEl = line;
+
+    const box = document.createElement('div');
+    box.className = `cm-callout callout-${this.tag.toLowerCase()}`;
+
+    const headerEl = document.createElement('div');
+    headerEl.className = 'callout-header';
+    headerEl.textContent = this.header || this.tag;
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'callout-body';
+
+    if (!this.nestedView) {
+      this.nestedView = new NestedEditorView({
+        doc: this.body,
+        parent: bodyEl,
+        extensions: [
+          IsNestedEditor.of(true),
+          combinedListPlugin,
+          calloutExtension,
+          quotePlugin,
+          inlinePlugin,
+          hashtagField,
+          NestedEditorView.editable.of(false),
+          NestedEditorView.updateListener.of((update: ViewUpdate) => {
+            if (!update.docChanged) return;
+            const rng = this.findMyRange();
+            if (!rng) return;
+            const newText = update.state.doc.toString();
+            this.outerView.dispatch({
+              changes: {
+                from: rng.from,
+                to: rng.to,
+                insert:
+                  `> [!${this.tag}] ${this.header}\n` +
+                  newText.split('\n').map(l => `> ${l}`).join('\n')
+              }
+            });
+          })
+        ]
+      });
+
+      requestAnimationFrame(() => {
+        if (this.nestedView) {
+          this.nestedView.dispatch({
+            effects: updateCalloutEffect.of(
+              buildCalloutDecorations(this.nestedView.state, this.nestedView)
+            )
+          });
+        }
+      });
+    }
+
+    if (!view.state.facet(IsNestedEditor)) {
+      const editButton = document.createElement('div');
+      editButton.className = 'callout-edit';
+      editButton.addEventListener('click', () => {
+        const rng = this.findMyRange();
+        const anchor = rng ? rng.to : view.state.selection.main.head;
+        view.dispatch(view.state.update({
+          selection: EditorSelection.cursor(anchor),
+          scrollIntoView: true,
+        }));
+      });
+      box.appendChild(editButton);
+    }
+
+    box.appendChild(headerEl);
+    box.appendChild(bodyEl);
+    box.style.overflow = 'hidden';
+
+    if (!view.state.facet(IsNestedEditor)) {
+      const lines = this.body.split('\n');
+      const nestedCount = lines.filter(a => a.includes('> [!')).length;
+      let estimatedHeight =
+        (lines.length + 2 + nestedCount) * view.defaultLineHeight +
+        (nestedCount * 75);
+      if (nestedCount === 0) {
+        estimatedHeight += 40;
+      }
+      box.style.setProperty('height', `${estimatedHeight}px`, 'important');
+    }
+
+    line.appendChild(box);
+    return line;
+  }
+
+  ignoreEvent(event: Event): boolean {
+    const target = event.target as HTMLElement;
+    return !!target.closest('.callout-edit');
+  }
+
+  destroy() {
+    this.nestedView?.destroy();
+    this.nestedView = undefined;
+    this.rootEl = undefined;
+  }
 }
 
 function buildCalloutDecorations(state: EditorState, view: EditorView): DecorationSet {
@@ -263,59 +222,26 @@ function buildCalloutDecorations(state: EditorState, view: EditorView): Decorati
 
   for (const { from, to, tag, header, body } of callouts) {
     const inside = sel.from >= from && sel.from <= to;
-    if (!inside) {
-      // Проверяем, есть ли уже виджет в кеше
-      const cacheKey = `${from}-${to}-${tag}-${header}-${body}`;
-      let widget = calloutWidgetCache.get(cacheKey);
+    if (inside) continue;
 
-      if (!widget) {
-        widget = new CalloutWidget(tag, header, body, from, to, view);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      }
-
-      builder.add(
-        from,
-        to,
-        Decoration.replace({
-          widget,
-          side: 1
-        })
-      );
-    }
+    const widget = new CalloutWidget(tag, header, body, view);
+    builder.add(from, to, Decoration.replace({ widget, side: 1 }));
   }
 
   return builder.finish();
 }
 
 const calloutDecorationField = StateField.define<DecorationSet>({
-  create(state) {
+  create() {
     return Decoration.none;
   },
   update(deco, tr) {
-    // Обрабатываем эффекты
     for (const e of tr.effects) {
       if (e.is(updateCalloutEffect)) return e.value;
     }
-
-    // Если есть изменения в документе, но нет эффектов - мапим существующие decorations
     if (tr.docChanged) {
       return deco.map(tr.changes);
     }
-
     return deco;
   },
   provide(field) {
@@ -342,21 +268,13 @@ function handleEnterForCallout(view: EditorView): boolean {
     if (depth > 1) {
       const reducedPrefix = Array(depth - 1).fill('> ').join('');
       view.dispatch({
-        changes: {
-          from: line.from,
-          to: line.to,
-          insert: reducedPrefix
-        },
+        changes: { from: line.from, to: line.to, insert: reducedPrefix },
         selection: { anchor: line.from + reducedPrefix.length },
         scrollIntoView: true
       });
     } else {
       view.dispatch({
-        changes: {
-          from: line.from,
-          to: line.to,
-          insert: ''
-        },
+        changes: { from: line.from, to: line.to, insert: '' },
         selection: { anchor: line.from },
         scrollIntoView: true
       });
@@ -366,11 +284,7 @@ function handleEnterForCallout(view: EditorView): boolean {
 
   const insertText = `\n${cleanPrefix}`;
   view.dispatch({
-    changes: {
-      from: head,
-      to: head,
-      insert: insertText
-    },
+    changes: { from: head, to: head, insert: insertText },
     selection: { anchor: head + insertText.length },
     scrollIntoView: true
   });
@@ -382,7 +296,6 @@ const calloutKeymap = keymap.of([
   { key: 'Enter', run: handleEnterForCallout }
 ]);
 
-// Дебаунсинг обновлений
 let updateTimeout: number | undefined;
 
 export const calloutExtension: Extension = [
@@ -390,36 +303,27 @@ export const calloutExtension: Extension = [
   calloutKeymap,
   EditorView.updateListener.of((update) => {
     if (update.docChanged || update.selectionSet || update.viewportChanged) {
-      // Очищаем предыдущий таймаут
       if (updateTimeout !== undefined) {
         clearTimeout(updateTimeout);
       }
 
-      // Для изменений в селекции - обновляем сразу
       if (update.selectionSet && !update.docChanged) {
         const view = update.view;
         const decorations = buildCalloutDecorations(view.state, view);
-        view.dispatch({
-          effects: updateCalloutEffect.of(decorations)
-        });
+        view.dispatch({ effects: updateCalloutEffect.of(decorations) });
         return;
       }
 
-      // Для изменений документа - дебаунсим
       updateTimeout = window.setTimeout(() => {
         const view = update.view;
         const decorations = buildCalloutDecorations(view.state, view);
-        view.dispatch({
-          effects: updateCalloutEffect.of(decorations)
-        });
+        view.dispatch({ effects: updateCalloutEffect.of(decorations) });
         updateTimeout = undefined;
-      }, 10); // Очень короткая задержка
+      }, 10);
     }
   })
 ];
 
-
 export const IsNestedEditor = Facet.define<boolean, boolean>({
   combine: values => values.length ? values[0] : false
 });
-
