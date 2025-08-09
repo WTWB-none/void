@@ -41,6 +41,10 @@ const updateCalloutEffect = StateEffect.define<DecorationSet>();
 interface CalloutData {
   from: number;
   to: number;
+  headerFrom: number;
+  headerTo: number;
+  bodyFrom: number;
+  bodyTo: number;
   tag: string;
   header: string;
   body: string;
@@ -65,21 +69,42 @@ function parseCallouts(state: EditorState): CalloutData[] {
 
     const tag = headerMatch.groups.tag;
     const header = headerMatch.groups.header.trim();
-    const bodyLines: string[] = [];
+
     const fromLine = i;
     let toLine = i;
 
+    const bodyLines: string[] = [];
+    const bodyStartLine = i + 1;
+
     for (let j = i + 1; j < lines.length; j++) {
-      const bodyMatch = lines[j].match(bodyRegex);
-      if (!bodyMatch?.groups) break;
-      bodyLines.push(bodyMatch.groups.body);
+      const m = lines[j].match(bodyRegex);
+      if (!m?.groups) break;
+      bodyLines.push(m.groups.body);
       toLine = j;
     }
 
-    const from = state.doc.line(fromLine + 1).from;
-    const to = state.doc.line(toLine + 1).to;
+    const headerLine = state.doc.line(fromLine + 1);
+    const lastLine = state.doc.line(toLine + 1);
 
-    result.push({ from, to, tag, header, body: bodyLines.join('\n') });
+    const from = headerLine.from;
+    const to = lastLine.to;
+
+    const bodyFrom = bodyLines.length
+      ? state.doc.line(bodyStartLine + 1).from
+      : headerLine.to;
+
+    const bodyTo = bodyLines.length
+      ? lastLine.to
+      : headerLine.to;
+
+    result.push({
+      from, to,
+      headerFrom: headerLine.from,
+      headerTo: headerLine.to,
+      bodyFrom, bodyTo,
+      tag, header, body: bodyLines.join('\n')
+    });
+
     i = toLine + 1;
   }
 
@@ -102,7 +127,7 @@ class CalloutWidget extends WidgetType {
   }
 
   eq(other: CalloutWidget): boolean {
-    return this.tag === other.tag && this.header === other.header && this.body === other.body;
+    return this.tag === other.tag && this.header === other.header;
   }
 
   private findMyRange(): { from: number; to: number } | null {
@@ -115,7 +140,7 @@ class CalloutWidget extends WidgetType {
 
   toDOM(view: EditorView): HTMLElement {
     const line = document.createElement('div');
-    line.className = 'cm-line';
+    line.className = 'wrapper';
     this.rootEl = line;
 
     const box = document.createElement('div');
@@ -134,6 +159,7 @@ class CalloutWidget extends WidgetType {
         parent: bodyEl,
         extensions: [
           IsNestedEditor.of(true),
+          EditorView.lineWrapping,
           combinedListPlugin,
           calloutExtension,
           quotePlugin,
@@ -144,14 +170,19 @@ class CalloutWidget extends WidgetType {
             if (!update.docChanged) return;
             const rng = this.findMyRange();
             if (!rng) return;
-            const newText = update.state.doc.toString();
+
+            const all = parseCallouts(this.outerView.state);
+            const mine = all.find(c => c.from === rng.from && c.to === rng.to);
+            if (!mine) return;
+
+            const newBody = update.state.doc.toString();
+            const prefixed = newBody.split('\n').map(l => `> ${l}`).join('\n');
+
             this.outerView.dispatch({
               changes: {
-                from: rng.from,
-                to: rng.to,
-                insert:
-                  `> [!${this.tag}] ${this.header}\n` +
-                  newText.split('\n').map(l => `> ${l}`).join('\n')
+                from: mine.bodyFrom,
+                to: mine.bodyTo,
+                insert: prefixed
               }
             });
           })
@@ -172,9 +203,16 @@ class CalloutWidget extends WidgetType {
     if (!view.state.facet(IsNestedEditor)) {
       const editButton = document.createElement('div');
       editButton.className = 'callout-edit';
-      editButton.addEventListener('click', () => {
+      editButton.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      editButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const rng = this.findMyRange();
-        const anchor = rng ? rng.to : view.state.selection.main.head;
+        const anchor = rng ? (rng.to) : view.state.selection.main.head; // гарантированно внутрь
+        view.focus();
         view.dispatch(view.state.update({
           selection: EditorSelection.cursor(anchor),
           scrollIntoView: true,
@@ -200,6 +238,10 @@ class CalloutWidget extends WidgetType {
     }
 
     line.appendChild(box);
+    line.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+    }, true);
+
     return line;
   }
 
@@ -302,18 +344,33 @@ export const calloutExtension: Extension = [
   calloutDecorationField,
   calloutKeymap,
   EditorView.updateListener.of((update) => {
-    if (update.docChanged || update.selectionSet || update.viewportChanged) {
-      if (updateTimeout !== undefined) {
-        clearTimeout(updateTimeout);
-      }
+    if (update.selectionSet && !update.docChanged) {
+      const view = update.view;
+      const decorations = buildCalloutDecorations(view.state, view);
+      view.dispatch({ effects: updateCalloutEffect.of(decorations) });
+      return;
+    }
 
-      if (update.selectionSet && !update.docChanged) {
-        const view = update.view;
-        const decorations = buildCalloutDecorations(view.state, view);
-        view.dispatch({ effects: updateCalloutEffect.of(decorations) });
-        return;
-      }
+    if (!update.docChanged) return;
 
+    let needsRebuild = false;
+    const before = parseCallouts(update.startState);
+
+    if (!before.length) {
+      needsRebuild = true;
+    } else {
+      update.changes.iterChanges((fromA, toA) => {
+        if (needsRebuild) return;
+        const hitHeaderOrOutside = before.some(c =>
+          (fromA < c.headerTo && toA > c.headerFrom) ||
+          fromA < c.from || toA > c.to
+        );
+        if (hitHeaderOrOutside) needsRebuild = true;
+      });
+    }
+
+    if (needsRebuild) {
+      if (updateTimeout !== undefined) clearTimeout(updateTimeout);
       updateTimeout = window.setTimeout(() => {
         const view = update.view;
         const decorations = buildCalloutDecorations(view.state, view);

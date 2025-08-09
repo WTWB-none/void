@@ -409,6 +409,7 @@
   right: 0.5em;
   width: 1.5em;
   height: 1.5em;
+  z-index: 100;
 }
 
 .cm-code .cm-code-lang {
