@@ -223,7 +223,7 @@ class CalloutWidget extends WidgetType {
 
     box.appendChild(headerEl);
     box.appendChild(bodyEl);
-    box.style.overflow = 'hidden';
+    box.style.overflowY = 'scroll';
 
     if (!view.state.facet(IsNestedEditor)) {
       const lines = this.body.split('\n');
@@ -235,6 +235,7 @@ class CalloutWidget extends WidgetType {
         estimatedHeight += 40;
       }
       box.style.setProperty('height', `${estimatedHeight}px`, 'important');
+      console.log(box.scrollHeight);
     }
 
     line.appendChild(box);
