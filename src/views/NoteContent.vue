@@ -30,12 +30,13 @@ import { calloutExtension } from '@/components/editor/callout/callout';
 import { hashtagField } from '@/components/editor/tags/tags';
 import { CodeBlockPlugin } from '@/components/editor/code-block/codeblock';
 import { get_note, write_note } from '@/lib/logic/md-notes';
+import { EditorView } from '@codemirror/view';
 
 let props = defineProps({
   url: String
 });
 let content = ref('');
-const extensions = shallowRef([CodeBlockPlugin, calloutExtension, quotePlugin, headingPlugin, inlinePlugin, pageBreaker, combinedListPlugin, hashtagField]);
+const extensions = shallowRef([EditorView.lineWrapping, CodeBlockPlugin, calloutExtension, quotePlugin, headingPlugin, inlinePlugin, pageBreaker, combinedListPlugin, hashtagField]);
 
 watch(content, async () => {
   if (!props.url) { return }

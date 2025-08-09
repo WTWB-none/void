@@ -27,6 +27,7 @@ import {
   Extension,
 } from '@codemirror/state';
 import { insertNewlineAndIndent, indentMore, indentLess } from '@codemirror/commands';
+import { IsNestedEditor } from '../callout/callout.ts'
 
 class TodoCheckboxInline extends WidgetType {
   constructor(
@@ -92,7 +93,7 @@ const listExtension = ViewPlugin.fromClass(
             const offset = todoMatch.index;
             const prefixStart = line.from + offset;
             const prefixEnd = prefixStart + todoMatch[1].length;
-            const cursorInside = cursorPos >= prefixStart && cursorPos <= prefixEnd;
+            const cursorInside = cursorPos >= prefixStart && cursorPos <= prefixEnd && !view.state.facet(IsNestedEditor);
 
             if (!cursorInside) {
               builder.add(
@@ -119,7 +120,7 @@ const listExtension = ViewPlugin.fromClass(
               );
             }
           } else {
-            const bulletMatch = /^([ \t]*)-\s/.exec(line.text);
+            const bulletMatch = /([ \t]*)-\s/.exec(line.text);
             if (bulletMatch && bulletMatch.index !== undefined) {
               const indent = bulletMatch[1];
               const restOfLine = line.text.substring(bulletMatch[0].length);
@@ -159,7 +160,6 @@ const listExtension = ViewPlugin.fromClass(
 );
 
 function handleEnter(view: EditorView): boolean {
-  console.log('Combined handleEnter called');
   const { state } = view;
   const { head } = state.selection.main;
   const line = state.doc.lineAt(head);
@@ -203,7 +203,7 @@ function handleEnter(view: EditorView): boolean {
     return true;
   }
 
-  const bulletMatch = /^([ \t]*)(-)(\s)(.*)$/.exec(line.text);
+  const bulletMatch = /([ \t]*)(-)(\s)(.*)$/.exec(line.text);
   if (bulletMatch) {
     const content = bulletMatch[4];
     // Убеждаемся, что это не todo item
