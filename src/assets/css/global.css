@@ -397,10 +397,11 @@
   position: relative;
 }
 
-.cm-code .shiki {
+.cm-code-body .shiki {
   padding: 1em;
   border-radius: 12px;
   min-height: 3em;
+  overflow-x: scroll;
 }
 
 .cm-code .cm-code-button {
@@ -409,7 +410,7 @@
   right: 0.5em;
   width: 1.5em;
   height: 1.5em;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .cm-code .cm-code-lang {
@@ -423,4 +424,14 @@
   margin: 0;
   pointer-events: none;
   user-select: none;
+}
+
+.shiki code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.shiki .line {
+  white-space: inherit;
 }
