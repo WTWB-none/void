@@ -1,18 +1,18 @@
-/*
-Copyright 2025 The VOID Authors. All Rights Reserved.
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-*/
+/**
+ * Copyright 2025 The VOID Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {
   EditorSelection,
   EditorState,
@@ -90,7 +90,6 @@ class CodeBlockWidget extends WidgetType {
     let to = view.state.doc.lineAt(this.to).number;
     let from = view.state.doc.lineAt(this.from).number;
     const estimatedHeight = ((to - from) * view.defaultLineHeight) + 10;
-    // Рендерим подсветку
     codeToHtml(this.code, {
       lang: this.lang.toLowerCase(),
       theme: 'catppuccin-mocha',
@@ -100,7 +99,6 @@ class CodeBlockWidget extends WidgetType {
       const cm = getComputedStyle(view.contentDOM);
       const lineH = `${view.defaultLineHeight}px`;
 
-      // Метрики CodeMirror -> Shiki
       shiki.style.setProperty('font-family', cm.fontFamily, 'important');
       shiki.style.setProperty('font-size', cm.fontSize, 'important');
       shiki.style.setProperty('line-height', lineH, 'important');
@@ -137,7 +135,6 @@ function parseCodeblock(state: EditorState): DecorationSet {
   const headerRegexp = /```(?<lang>[^\s`]+)?\s*$/;
   const closeRegexp = /^```\s*$/;
 
-  // helpers
   const intersects = (aFrom: number, aTo: number, bFrom: number, bTo: number) =>
     aFrom < bTo && bFrom < aTo;
 
@@ -164,7 +161,6 @@ function parseCodeblock(state: EditorState): DecorationSet {
     lang = (match.groups?.lang ?? 'text').trim() || 'text';
     from = headerLine.from;
 
-    // ищем закрывашку
     let closed = false;
     for (let j = i + 1; j <= doc.lines; j++) {
       const ln = doc.line(j);
@@ -177,12 +173,10 @@ function parseCodeblock(state: EditorState): DecorationSet {
       code += ln.text + '\n';
     }
     if (!closed || to <= from) {
-      // незакрытые блоки оставляем в сыром MD
       continue;
     }
 
     const hits = selectionHitsRange(from, to);
-    // Obsidian-like: пока тянем — виджет; отпустили и попали — MD
     const showMd = !selecting && hits;
     if (!showMd) {
       decoration.add(from, to, Decoration.replace({
@@ -191,7 +185,6 @@ function parseCodeblock(state: EditorState): DecorationSet {
       }));
     }
 
-    // reset локальных (необязательно, но аккуратнее)
     lang = '';
     code = '';
     from = 1;
@@ -201,11 +194,9 @@ function parseCodeblock(state: EditorState): DecorationSet {
   return decoration.finish();
 }
 
-// rAF-пересборка на pointerup (даже вне редактора)
 const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
   private onUp = () => {
     const view = this.view;
-    // если стор используется для флага "идёт выделение" — сбросим
     const store = useSelectionStore();
     if (store.toggleFalse) store.toggleFalse();
 
@@ -227,7 +218,6 @@ const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
   }
 });
 
-// StateField с поддержкой эффекта
 export const CodeBlockExtension = StateField.define<DecorationSet>({
   create: parseCodeblock,
   update(deco, tr) {
@@ -242,5 +232,4 @@ export const CodeBlockExtension = StateField.define<DecorationSet>({
   provide: f => EditorView.decorations.from(f)
 });
 
-// Подключай этот экспорт
 export const CodeBlockPlugin = [CodeBlockExtension, forceRecalcOnPointerUp];
