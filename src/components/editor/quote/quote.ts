@@ -18,109 +18,167 @@ import {
   DecorationSet,
   EditorView,
   WidgetType,
-  keymap
+  keymap,
+  ViewPlugin,
 } from '@codemirror/view';
 import {
   StateField,
   EditorState,
-  RangeSetBuilder
+  RangeSetBuilder,
+  EditorSelection,
+  StateEffect,
 } from '@codemirror/state';
+import { useSelectionStore } from '@/lib/logic/selectorStore';
 
+/* ---------- эффект для применения пересчитанных декораций ---------- */
+const updateQuoteEffect = StateEffect.define<DecorationSet>();
+
+/* ---------------------- виджет цитаты ---------------------- */
 class QuoteWidget extends WidgetType {
-  constructor(private readonly body: string) {
+  constructor(private readonly body: string, private readonly to: number) {
     super();
   }
-  toDOM(): HTMLElement {
+  toDOM(view: EditorView): HTMLElement {
     const block = document.createElement('blockquote');
     block.className = 'quote-block';
     block.textContent = this.body;
+
+    // mousedown: раскрыть в MD (ставим каретку внутрь блока)
+    block.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      view.focus();
+      view.dispatch(view.state.update({
+        selection: EditorSelection.cursor(this.to),
+      }));
+    }, true);
+
     return block;
   }
-  ignoreEvent(): boolean {
-    return false;
-  }
+  // события обрабатываем сами
+  ignoreEvent(): boolean { return true; }
 }
 
-function parseQuotes(state: EditorState): {
-  from: number;
-  to: number;
-  body: string;
-}[] {
+/* ---------------------- парсинг цитат ---------------------- */
+function parseQuotes(state: EditorState): Array<{ from: number; to: number; body: string; }> {
   const lines = state.doc.toString().split('\n');
-  const result = [];
+  const result: Array<{ from: number; to: number; body: string; }> = [];
   let i = 0;
+
   while (i < lines.length) {
     const line = lines[i];
-    const match = line.match(/^>\s?(.*)/);
-    if (!match) {
-      i++;
-      continue;
-    }
-    const bodyLines = [match[1]];
+
+    // пропускаем callout-хедеры (> [!TAG] ...)
+    const m = line.match(/^>\s?(.*)/);
+    if (!m) { i++; continue; }
+
+    const bodyParts: string[] = [m[1]];
     const fromLine = i;
     let toLine = i;
+
     for (let j = i + 1; j < lines.length; j++) {
-      const next = lines[j].match(/^>\s?(.*)/);
-      if (!next) break;
-      bodyLines.push(next[1]);
+      const next = lines[j];
+
+      // тоже исключаем вложенные callouts-подстроки
+      if (/^>\s*\[!/.test(next)) break;
+
+      const mm = next.match(/^>\s?(.*)/);
+      if (!mm) break;
+      bodyParts.push(mm[1]);
       toLine = j;
     }
+
     const from = state.doc.line(fromLine + 1).from;
     const to = state.doc.line(toLine + 1).to;
-    result.push({
-      from,
-      to,
-      body: bodyLines.join('\n')
-    });
+
+    result.push({ from, to, body: bodyParts.join('\n') });
     i = toLine + 1;
   }
+
   return result;
 }
 
+/* ----------------- helpers: пересечение selection ----------------- */
+const intersects = (aFrom: number, aTo: number, bFrom: number, bTo: number) =>
+  aFrom < bTo && bFrom < aTo;
+
+const selectionHitsRange = (state: EditorState, from: number, to: number) => {
+  for (const r of state.selection.ranges) {
+    if (r.empty) {
+      // считаем правую границу исключительной, как в replace/side:1
+      if (r.from >= from && r.from <= to) return true;
+    } else {
+      if (intersects(r.from, r.to, from, to)) return true;
+    }
+  }
+  return false;
+};
+
+/* --------------- сборка декораций (как в кодблоке) --------------- */
 function buildQuoteDecorations(state: EditorState): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
   const quotes = parseQuotes(state);
-  const sel = state.selection.main;
+
+  const store = useSelectionStore();
+  const selecting = store.current === true || store.current === 'true';
+
   for (const { from, to, body } of quotes) {
-    const inside = sel.from >= from && sel.from <= to;
-    if (!inside) {
-      builder.add(from, to, Decoration.replace({
-        widget: new QuoteWidget(body),
-        side: 1
-      }));
-    }
+    const hits = selectionHitsRange(state, from, to);
+    // Obsidian-like: пока тянем — показываем виджет; отпустили и попали — показываем MD
+    const showMd = !selecting && hits;
+    if (showMd) continue;
+
+    builder.add(from, to, Decoration.replace({
+      widget: new QuoteWidget(body, to),
+      side: 1
+    }));
   }
+
   return builder.finish();
 }
 
-const quoteDecorationField = StateField.define<DecorationSet>({
-  create: buildQuoteDecorations,
-  update(deco, tr) {
-    if (tr.docChanged || tr.selection) {
-      return buildQuoteDecorations(tr.state);
-    }
-    return deco;
-  },
-  provide: f => EditorView.decorations.from(f)
+/* --------- глобальный pointerup + rAF как в кодблоке --------- */
+const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
+  private onUp = () => {
+    // если стор сигнализирует завершение селекта — сбросим
+    const store = useSelectionStore();
+    if (store.toggleFalse) store.toggleFalse();
+
+    const view = this.view;
+    const win = view.dom.ownerDocument.defaultView!;
+    win.requestAnimationFrame(() => {
+      const decos = buildQuoteDecorations(view.state);
+      view.dispatch({ effects: updateQuoteEffect.of(decos) });
+    });
+  };
+
+  constructor(private readonly view: EditorView) {
+    const doc = view.dom.ownerDocument;
+    doc.addEventListener('pointerup', this.onUp, true); // capture: ловим и вне редактора
+  }
+
+  destroy() {
+    const doc = this.view.dom.ownerDocument;
+    doc.removeEventListener('pointerup', this.onUp, true);
+  }
 });
 
+/* ----------------- Enter: продолжение/выход из цитаты ----------------- */
 const continueQuoteOnEnter = keymap.of([{
   key: 'Enter',
   run(view) {
     const { state, dispatch } = view;
     const { from } = state.selection.main;
     const line = state.doc.lineAt(from);
-    const trimmed = line.text.trim();
+    const text = line.text;
 
-    if (/^>\s*\[!/.test(line.text)) {
-      return false;
-    }
+    // не трогаем callout-хедеры
+    if (/^>\s*\[!/.test(text)) return false;
 
-    if (!/^>\s/.test(line.text)) {
-      return false;
-    }
+    if (!/^>\s?/.test(text)) return false;
 
-    if (/^>\s*$/.test(trimmed)) {
+    // пустая цитата → выходим из неё
+    if (/^>\s*$/.test(text.trim())) {
       dispatch(state.update({
         changes: { from: line.from, to: line.to, insert: '' },
         selection: { anchor: line.from },
@@ -129,7 +187,7 @@ const continueQuoteOnEnter = keymap.of([{
       return true;
     }
 
-    const prefixMatch = line.text.match(/^(\s*> ?)/);
+    const prefixMatch = text.match(/^(\s*> ?)/);
     const prefix = prefixMatch?.[1] ?? '> ';
     dispatch(state.update({
       changes: { from, to: from, insert: `\n${prefix}` },
@@ -140,7 +198,21 @@ const continueQuoteOnEnter = keymap.of([{
   }
 }]);
 
+/* ----------------- StateField с поддержкой эффекта ----------------- */
 export const quotePlugin = [
-  quoteDecorationField,
+  StateField.define<DecorationSet>({
+    create: buildQuoteDecorations,
+    update(deco, tr) {
+      for (const e of tr.effects) {
+        if (e.is(updateQuoteEffect)) return e.value;
+      }
+      if (tr.docChanged || tr.selection) {
+        return buildQuoteDecorations(tr.state);
+      }
+      return deco;
+    },
+    provide: f => EditorView.decorations.from(f)
+  }),
+  forceRecalcOnPointerUp,
   continueQuoteOnEnter
 ];

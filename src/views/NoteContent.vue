@@ -15,7 +15,8 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <template>
   <div class="w-full h-full pt-[3em] pl-[3em] pr-[3em]">
-    <CodeMirror :extensions="extensions" v-model="content" ref="Editor" class="editor" />
+    <CodeMirror :extensions="extensions" v-model="content" ref="Editor" class="editor" :onmousedown="enableSelection"
+      :onmouseup="stopSelection" />
   </div>
 </template>
 <script setup lang="ts">
@@ -31,16 +32,26 @@ import { hashtagField } from '@/components/editor/tags/tags';
 import { CodeBlockPlugin } from '@/components/editor/code-block/codeblock';
 import { get_note, write_note } from '@/lib/logic/md-notes';
 import { EditorView } from '@codemirror/view';
+import { useSelectionStore } from '@/lib/logic/selectorStore';
 
 let props = defineProps({
   url: String
 });
+let selection = useSelectionStore();
 let content = ref('');
 const extensions = shallowRef([EditorView.lineWrapping, CodeBlockPlugin, calloutExtension, quotePlugin, headingPlugin, inlinePlugin, pageBreaker, combinedListPlugin, hashtagField]);
-
+function enableSelection() {
+  selection.toggleTrue();
+}
+function stopSelection() {
+  selection.toggleFalse();
+}
 watch(content, async () => {
   if (!props.url) { return }
   await write_note(decodeURIComponent(atob(props.url)), content.value);
+})
+watch(() => selection.current, () => {
+  console.log(selection.current);
 })
 
 onMounted(async () => {

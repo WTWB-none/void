@@ -291,7 +291,7 @@
 }
 
 .cm-editor {
-  height: 80vh !important;
+  height: calc(80vh + 3em + 10px) !important;
 }
 
 .cm-editor.cm-focused {
@@ -397,11 +397,13 @@
   position: relative;
 }
 
+.cm-code-body {
+  border-radius: 1em;
+  overflow-y: auto !important;
+}
+
 .cm-code-body .shiki {
   padding: 1em;
-  border-radius: 12px;
-  min-height: 3em;
-  overflow-x: scroll;
 }
 
 .cm-code .cm-code-button {

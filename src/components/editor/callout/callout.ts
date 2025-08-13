@@ -20,6 +20,7 @@ import {
   WidgetType,
   ViewUpdate,
   keymap,
+  ViewPlugin
 } from '@codemirror/view';
 import {
   StateField,
@@ -28,13 +29,16 @@ import {
   StateEffect,
   Extension,
   Facet,
-  EditorSelection
+  EditorSelection,
+  SelectionRange
 } from '@codemirror/state';
 import { EditorView as NestedEditorView } from 'codemirror';
 import { quotePlugin } from '../quote/quote';
 import { inlinePlugin } from '../inline/inline';
 import { combinedListPlugin } from '../lists/lists';
+import { useSelectionStore } from '@/lib/logic/selectorStore';
 import { hashtagField } from '../tags/tags';
+import { watch } from 'vue';
 
 const updateCalloutEffect = StateEffect.define<DecorationSet>();
 
@@ -215,7 +219,6 @@ class CalloutWidget extends WidgetType {
         view.focus();
         view.dispatch(view.state.update({
           selection: EditorSelection.cursor(anchor),
-          scrollIntoView: true,
         }));
       });
       box.appendChild(editButton);
@@ -235,7 +238,6 @@ class CalloutWidget extends WidgetType {
         estimatedHeight += 40;
       }
       box.style.setProperty('height', `${estimatedHeight}px`, 'important');
-      console.log(box.scrollHeight);
     }
 
     line.appendChild(box);
@@ -258,14 +260,33 @@ class CalloutWidget extends WidgetType {
   }
 }
 
+
 function buildCalloutDecorations(state: EditorState, view: EditorView): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
   const callouts = parseCallouts(state);
-  const sel = state.selection.main;
+  const store = useSelectionStore(); // true = сейчас тянем выделение/Shift; false = закончили
+
+  const rangeIntersects = (aFrom: number, aTo: number, bFrom: number, bTo: number) =>
+    aFrom < bTo && bFrom < aTo;
+
+  const selectionHitsRange = (from: number, to: number) => {
+    for (const r of state.selection.ranges) {
+      if (r.empty) {
+        return false;
+      } else {
+        if (rangeIntersects(r.from, r.to, from, to)) return true;
+      }
+    }
+    return false;
+  };
 
   for (const { from, to, tag, header, body } of callouts) {
+    const hits = selectionHitsRange(from, to);
+
+    const sel = state.selection.main;
     const inside = sel.from >= from && sel.from <= to;
-    if (inside) continue;
+    const selecting = store.current === 'true';
+    if ((!selecting && hits) || (inside && !selecting)) continue;
 
     const widget = new CalloutWidget(tag, header, body, view);
     builder.add(from, to, Decoration.replace({ widget, side: 1 }));
@@ -313,13 +334,11 @@ function handleEnterForCallout(view: EditorView): boolean {
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: reducedPrefix },
         selection: { anchor: line.from + reducedPrefix.length },
-        scrollIntoView: true
       });
     } else {
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: '' },
         selection: { anchor: line.from },
-        scrollIntoView: true
       });
     }
     return true;
@@ -329,7 +348,6 @@ function handleEnterForCallout(view: EditorView): boolean {
   view.dispatch({
     changes: { from: head, to: head, insert: insertText },
     selection: { anchor: head + insertText.length },
-    scrollIntoView: true
   });
 
   return true;
@@ -341,9 +359,30 @@ const calloutKeymap = keymap.of([
 
 let updateTimeout: number | undefined;
 
+const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
+  private onUp = () => {
+    const store = useSelectionStore();
+    store.toggleFalse();
+    const view = this.view;
+    const decorations = buildCalloutDecorations(view.state, view);
+    view.dispatch({ effects: updateCalloutEffect.of(decorations) });
+  };
+
+  constructor(private readonly view: EditorView) {
+    const doc = view.dom.ownerDocument;
+    doc.addEventListener('mouseup', this.onUp, true); // capture: ловим даже снаружи
+  }
+
+  destroy() {
+    const doc = this.view.dom.ownerDocument;
+    doc.removeEventListener('mouseup', this.onUp, true);
+  }
+});
+
 export const calloutExtension: Extension = [
   calloutDecorationField,
   calloutKeymap,
+  forceRecalcOnPointerUp,
   EditorView.updateListener.of((update) => {
     if (update.selectionSet && !update.docChanged) {
       const view = update.view;
@@ -381,7 +420,6 @@ export const calloutExtension: Extension = [
     }
   })
 ];
-
 export const IsNestedEditor = Facet.define<boolean, boolean>({
   combine: values => values.length ? values[0] : false
 });

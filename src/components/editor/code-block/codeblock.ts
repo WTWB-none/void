@@ -13,45 +13,53 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-import { EditorSelection, EditorState, RangeSetBuilder, StateField } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
+import {
+  EditorSelection,
+  EditorState,
+  RangeSetBuilder,
+  StateField,
+  StateEffect,
+} from '@codemirror/state';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  WidgetType,
+  ViewPlugin,
+} from '@codemirror/view';
 import { codeToHtml } from 'shiki';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { useSelectionStore } from '@/lib/logic/selectorStore';
+
+const updateCodeblockEffect = StateEffect.define<DecorationSet>();
 
 class CodeBlockWidget extends WidgetType {
-  constructor(private readonly lang: string, private readonly code: string, private readonly from: number) {
-    super()
+  constructor(
+    private readonly lang: string,
+    private readonly code: string,
+    private readonly from: number,
+    private readonly to: number,
+  ) {
+    super();
   }
   toDOM(view: EditorView): HTMLElement {
-    let el = document.createElement('div');
-    let copyButton = document.createElement('div');
-    let language = document.createElement('div');
-    let body = document.createElement('div');
-    body.className = 'cm-code-body';
-    language.textContent = this.lang;
-    language.className = 'cm-code-lang';
+    const el = document.createElement('div');
+    el.className = 'cm-code';
+
+    const copyButton = document.createElement('div');
     copyButton.className = 'cm-code-button';
     copyButton.style.display = 'none';
     copyButton.style.zIndex = '100';
-    copyButton.innerHTML = "<svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><rect stroke='none' fill='#ffffff' opacity='0'/><g transform=\"matrix(1 0 0 1 12 12)\" ><path style=\"stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(128,128,128); fill-rule: nonzero; opacity: 1;\" transform=\" translate(-12, -12)\" d=\"M 4 2 C 2.895 2 2 2.895 2 4 L 2 18 L 4 18 L 4 4 L 18 4 L 18 2 L 4 2 z M 8 6 C 6.895 6 6 6.895 6 8 L 6 20 C 6 21.105 6.895 22 8 22 L 20 22 C 21.105 22 22 21.105 22 20 L 22 8 C 22 6.895 21.105 6 20 6 L 8 6 z M 8 8 L 20 8 L 20 20 L 8 20 L 8 8 z\" stroke-linecap=\"round\" /></g></svg>"
-    copyButton.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      writeText(this.code);
-    });
+    copyButton.innerHTML =
+      "<svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><g transform=\"matrix(1 0 0 1 12 12)\"><path style=\"stroke:none;fill:rgb(128,128,128);\" transform=\" translate(-12, -12)\" d=\"M 4 2 C 2.895 2 2 2.895 2 4 L 2 18 L 4 18 L 4 4 L 18 4 L 18 2 L 4 2 z M 8 6 C 6.895 6 6 6.895 6 8 L 6 20 C 6 21.105 6.895 22 8 22 L 20 22 C 21.105 22 22 21.105 22 20 L 22 8 C 22 6.895 21.105 6 20 6 L 8 6 z M 8 8 L 20 8 L 20 20 L 8 20 L 8 8 z\"/></g></svg>";
 
-    copyButton.addEventListener('mousedown', (e) => {
-      e.preventDefault();        // не даём браузеру трогать selection
-      e.stopPropagation();
-    });
-    copyButton.addEventListener('mouseup', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
-    copyButton.addEventListener('dragstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
+    const language = document.createElement('div');
+    language.className = 'cm-code-lang';
+    language.textContent = this.lang;
+
+    const body = document.createElement('div');
+    body.className = 'cm-code-body';
+
     el.addEventListener('mouseenter', () => {
       language.style.display = 'none';
       copyButton.style.display = '';
@@ -61,22 +69,54 @@ class CodeBlockWidget extends WidgetType {
       copyButton.style.display = 'none';
     });
 
-    body.addEventListener('click', () => {
+    copyButton.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+    copyButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try { await writeText(this.code); } catch { }
+    }, true);
+
+    body.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       view.dispatch(view.state.update({
         selection: EditorSelection.cursor(this.from),
-      }))
-      console.log('done');
-    });
+      }));
+    }, true);
+
+    let to = view.state.doc.lineAt(this.to).number;
+    let from = view.state.doc.lineAt(this.from).number;
+    const estimatedHeight = ((to - from) * view.defaultLineHeight) + 10;
+    // Рендерим подсветку
     codeToHtml(this.code, {
       lang: this.lang.toLowerCase(),
       theme: 'catppuccin-mocha',
     }).then((v) => {
       body.innerHTML = v;
+      const shiki = body.getElementsByClassName('shiki').item(0) as HTMLElement;
+      const cm = getComputedStyle(view.contentDOM);
+      const lineH = `${view.defaultLineHeight}px`;
+
+      // Метрики CodeMirror -> Shiki
+      shiki.style.setProperty('font-family', cm.fontFamily, 'important');
+      shiki.style.setProperty('font-size', cm.fontSize, 'important');
+      shiki.style.setProperty('line-height', lineH, 'important');
+
+      const codeEl = shiki.querySelector('code') as HTMLElement | null;
+      if (codeEl) {
+        codeEl.style.setProperty('font-family', cm.fontFamily, 'important');
+        codeEl.style.setProperty('font-size', cm.fontSize, 'important');
+        codeEl.style.setProperty('line-height', lineH, 'important');
+      }
+      body.style.setProperty('height', `${estimatedHeight}px`, 'important');
       el.appendChild(copyButton);
       el.appendChild(language);
       el.appendChild(body);
     }, null);
-    el.className = 'cm-code';
+    el.style.setProperty('height', `${estimatedHeight}px`, 'important');
     return el;
   }
   ignoreEvent(event: Event): boolean {
@@ -87,75 +127,120 @@ class CodeBlockWidget extends WidgetType {
 
 function parseCodeblock(state: EditorState): DecorationSet {
   const doc = state.doc;
+  const decoration = new RangeSetBuilder<Decoration>();
+
   let lang = '';
   let code = '';
   let from = 1;
   let to = 1;
-  let decoration = new RangeSetBuilder<Decoration>();
-  const headerRegexp = /```(?<lang>\w+)/;
-  const closeRegexp = /```/;
+
+  const headerRegexp = /```(?<lang>[^\s`]+)?\s*$/;
+  const closeRegexp = /^```\s*$/;
+
+  // helpers
+  const intersects = (aFrom: number, aTo: number, bFrom: number, bTo: number) =>
+    aFrom < bTo && bFrom < aTo;
+
+  const selectionHitsRange = (from: number, to: number) => {
+    for (const r of state.selection.ranges) {
+      if (r.empty) {
+        if (r.from >= from && r.from <= to) return true; // каретка внутри
+      } else {
+        if (intersects(r.from, r.to, from, to)) return true;
+      }
+    }
+    return false;
+  };
+
+  const store = useSelectionStore();
+  const selecting = store.current === true || store.current === 'true';
+
   for (let i = 1; i <= doc.lines; i++) {
     code = '';
-    let match = doc.line(i).text.match(headerRegexp);
-    if (match == null || match.groups == undefined) {
-      continue;
-    }
-    else {
-      lang = match.groups.lang
-      from = doc.line(i).from;
-      for (let j = i + 1; j <= doc.lines; j++) {
-        let closeMatch = doc.line(j).text.match(closeRegexp);
-        if (closeMatch == null) {
-          code += doc.line(j).text + '\n';
-          continue;
-        }
-        to = doc.line(j).to;
+    const headerLine = doc.line(i);
+    const match = headerLine.text.match(headerRegexp);
+    if (!match) continue;
+
+    lang = (match.groups?.lang ?? 'text').trim() || 'text';
+    from = headerLine.from;
+
+    // ищем закрывашку
+    let closed = false;
+    for (let j = i + 1; j <= doc.lines; j++) {
+      const ln = doc.line(j);
+      if (closeRegexp.test(ln.text)) {
+        to = ln.to;
         i = j;
+        closed = true;
         break;
       }
-
-      if (to > from && (state.selection.main.head < from || state.selection.main.head > to)) {
-        if (state.selection.main.head < doc.lineAt(from - 1).from || state.selection.main.head > doc.lineAt(to + 1).to) {
-          decoration.add(
-            from,
-            to,
-            Decoration.replace(
-              {
-                widget: new CodeBlockWidget(lang, code, from),
-                side: 1
-              }
-            )
-          );
-        }
-        else {
-          decoration.add(
-            from,
-            to,
-            Decoration.replace(
-              {
-                widget: new CodeBlockWidget(lang, code, from),
-                side: 1
-              }
-            )
-          );
-        }
-        lang = '';
-        code = '';
-        from = 1;
-        to = 1;
-      }
+      code += ln.text + '\n';
     }
+    if (!closed || to <= from) {
+      // незакрытые блоки оставляем в сыром MD
+      continue;
+    }
+
+    const hits = selectionHitsRange(from, to);
+    // Obsidian-like: пока тянем — виджет; отпустили и попали — MD
+    const showMd = !selecting && hits;
+    if (!showMd) {
+      decoration.add(from, to, Decoration.replace({
+        widget: new CodeBlockWidget(lang, code, from, to),
+        side: 1
+      }));
+    }
+
+    // reset локальных (необязательно, но аккуратнее)
+    lang = '';
+    code = '';
+    from = 1;
+    to = 1;
   }
+
   return decoration.finish();
 }
 
-export const CodeBlockPlugin = StateField.define<DecorationSet>({
+// rAF-пересборка на pointerup (даже вне редактора)
+const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
+  private onUp = () => {
+    const view = this.view;
+    // если стор используется для флага "идёт выделение" — сбросим
+    const store = useSelectionStore();
+    if (store.toggleFalse) store.toggleFalse();
+
+    const win = view.dom.ownerDocument.defaultView!;
+    win.requestAnimationFrame(() => {
+      const decorations = parseCodeblock(view.state);
+      view.dispatch({ effects: updateCodeblockEffect.of(decorations) });
+    });
+  };
+
+  constructor(private readonly view: EditorView) {
+    const doc = view.dom.ownerDocument;
+    doc.addEventListener('pointerup', this.onUp, true); // capture: ловим и вне редактора
+  }
+
+  destroy() {
+    const doc = this.view.dom.ownerDocument;
+    doc.removeEventListener('pointerup', this.onUp, true);
+  }
+});
+
+// StateField с поддержкой эффекта
+export const CodeBlockExtension = StateField.define<DecorationSet>({
   create: parseCodeblock,
   update(deco, tr) {
+    for (const e of tr.effects) {
+      if (e.is(updateCodeblockEffect)) return e.value;
+    }
     if (tr.docChanged || tr.selection) {
       return parseCodeblock(tr.state);
     }
     return deco;
   },
   provide: f => EditorView.decorations.from(f)
-})
+});
+
+// Подключай этот экспорт
+export const CodeBlockPlugin = [CodeBlockExtension, forceRecalcOnPointerUp];
