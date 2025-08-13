@@ -1,18 +1,18 @@
-/*
-Copyright 2025 The VOID Authors. All Rights Reserved.
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-*/
+/**
+ * Copyright 2025 The VOID Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {
   Decoration,
   DecorationSet,
@@ -30,7 +30,6 @@ import {
   Extension,
   Facet,
   EditorSelection,
-  SelectionRange
 } from '@codemirror/state';
 import { EditorView as NestedEditorView } from 'codemirror';
 import { quotePlugin } from '../quote/quote';
@@ -38,7 +37,6 @@ import { inlinePlugin } from '../inline/inline';
 import { combinedListPlugin } from '../lists/lists';
 import { useSelectionStore } from '@/lib/logic/selectorStore';
 import { hashtagField } from '../tags/tags';
-import { watch } from 'vue';
 
 const updateCalloutEffect = StateEffect.define<DecorationSet>();
 
@@ -264,7 +262,7 @@ class CalloutWidget extends WidgetType {
 function buildCalloutDecorations(state: EditorState, view: EditorView): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
   const callouts = parseCallouts(state);
-  const store = useSelectionStore(); // true = сейчас тянем выделение/Shift; false = закончили
+  const store = useSelectionStore();
 
   const rangeIntersects = (aFrom: number, aTo: number, bFrom: number, bTo: number) =>
     aFrom < bTo && bFrom < aTo;

@@ -1,18 +1,18 @@
-/*
-Copyright 2025 The VOID Authors. All Rights Reserved.
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-*/
+/**
+ * Copyright 2025 The VOID Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {
   Decoration,
   DecorationSet,
@@ -30,10 +30,8 @@ import {
 } from '@codemirror/state';
 import { useSelectionStore } from '@/lib/logic/selectorStore';
 
-/* ---------- эффект для применения пересчитанных декораций ---------- */
 const updateQuoteEffect = StateEffect.define<DecorationSet>();
 
-/* ---------------------- виджет цитаты ---------------------- */
 class QuoteWidget extends WidgetType {
   constructor(private readonly body: string, private readonly to: number) {
     super();
@@ -43,7 +41,6 @@ class QuoteWidget extends WidgetType {
     block.className = 'quote-block';
     block.textContent = this.body;
 
-    // mousedown: раскрыть в MD (ставим каретку внутрь блока)
     block.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -55,11 +52,9 @@ class QuoteWidget extends WidgetType {
 
     return block;
   }
-  // события обрабатываем сами
   ignoreEvent(): boolean { return true; }
 }
 
-/* ---------------------- парсинг цитат ---------------------- */
 function parseQuotes(state: EditorState): Array<{ from: number; to: number; body: string; }> {
   const lines = state.doc.toString().split('\n');
   const result: Array<{ from: number; to: number; body: string; }> = [];
@@ -68,7 +63,6 @@ function parseQuotes(state: EditorState): Array<{ from: number; to: number; body
   while (i < lines.length) {
     const line = lines[i];
 
-    // пропускаем callout-хедеры (> [!TAG] ...)
     const m = line.match(/^>\s?(.*)/);
     if (!m) { i++; continue; }
 
@@ -79,7 +73,6 @@ function parseQuotes(state: EditorState): Array<{ from: number; to: number; body
     for (let j = i + 1; j < lines.length; j++) {
       const next = lines[j];
 
-      // тоже исключаем вложенные callouts-подстроки
       if (/^>\s*\[!/.test(next)) break;
 
       const mm = next.match(/^>\s?(.*)/);
@@ -98,14 +91,12 @@ function parseQuotes(state: EditorState): Array<{ from: number; to: number; body
   return result;
 }
 
-/* ----------------- helpers: пересечение selection ----------------- */
 const intersects = (aFrom: number, aTo: number, bFrom: number, bTo: number) =>
   aFrom < bTo && bFrom < aTo;
 
 const selectionHitsRange = (state: EditorState, from: number, to: number) => {
   for (const r of state.selection.ranges) {
     if (r.empty) {
-      // считаем правую границу исключительной, как в replace/side:1
       if (r.from >= from && r.from <= to) return true;
     } else {
       if (intersects(r.from, r.to, from, to)) return true;
@@ -114,7 +105,6 @@ const selectionHitsRange = (state: EditorState, from: number, to: number) => {
   return false;
 };
 
-/* --------------- сборка декораций (как в кодблоке) --------------- */
 function buildQuoteDecorations(state: EditorState): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
   const quotes = parseQuotes(state);
@@ -124,7 +114,6 @@ function buildQuoteDecorations(state: EditorState): DecorationSet {
 
   for (const { from, to, body } of quotes) {
     const hits = selectionHitsRange(state, from, to);
-    // Obsidian-like: пока тянем — показываем виджет; отпустили и попали — показываем MD
     const showMd = !selecting && hits;
     if (showMd) continue;
 
@@ -137,10 +126,8 @@ function buildQuoteDecorations(state: EditorState): DecorationSet {
   return builder.finish();
 }
 
-/* --------- глобальный pointerup + rAF как в кодблоке --------- */
 const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
   private onUp = () => {
-    // если стор сигнализирует завершение селекта — сбросим
     const store = useSelectionStore();
     if (store.toggleFalse) store.toggleFalse();
 
@@ -163,7 +150,6 @@ const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
   }
 });
 
-/* ----------------- Enter: продолжение/выход из цитаты ----------------- */
 const continueQuoteOnEnter = keymap.of([{
   key: 'Enter',
   run(view) {
@@ -172,12 +158,10 @@ const continueQuoteOnEnter = keymap.of([{
     const line = state.doc.lineAt(from);
     const text = line.text;
 
-    // не трогаем callout-хедеры
     if (/^>\s*\[!/.test(text)) return false;
 
     if (!/^>\s?/.test(text)) return false;
 
-    // пустая цитата → выходим из неё
     if (/^>\s*$/.test(text.trim())) {
       dispatch(state.update({
         changes: { from: line.from, to: line.to, insert: '' },
@@ -198,7 +182,6 @@ const continueQuoteOnEnter = keymap.of([{
   }
 }]);
 
-/* ----------------- StateField с поддержкой эффекта ----------------- */
 export const quotePlugin = [
   StateField.define<DecorationSet>({
     create: buildQuoteDecorations,
