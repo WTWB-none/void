@@ -182,6 +182,7 @@ function handleEnter(view: EditorView): boolean {
             insert: ''
           },
           selection: { anchor: line.from },
+          scrollIntoView: true
         });
         return true;
       }
@@ -197,6 +198,7 @@ function handleEnter(view: EditorView): boolean {
         insert: insertText
       },
       selection: { anchor: cursorPos },
+      scrollIntoView: true
     });
     return true;
   }
@@ -222,6 +224,7 @@ function handleEnter(view: EditorView): boolean {
               insert: ''
             },
             selection: { anchor: line.from },
+            scrollIntoView: true,
           });
           return true;
         }
@@ -237,6 +240,7 @@ function handleEnter(view: EditorView): boolean {
           insert: insertText
         },
         selection: { anchor: cursorPos },
+        scrollIntoView: true
       });
       return true;
     }

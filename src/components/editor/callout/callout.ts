@@ -205,6 +205,7 @@ class CalloutWidget extends WidgetType {
     if (!view.state.facet(IsNestedEditor)) {
       const editButton = document.createElement('div');
       editButton.className = 'callout-edit';
+      editButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1023"><path fill="currentColor" d="M896.428 1023h-768q-53 0-90.5-37.5T.428 895V127q0-53 37.5-90t90.5-37h576l-128 127h-384q-27 0-45.5 19t-18.5 45v640q0 27 19 45.5t45 18.5h640q27 0 45.5-18.5t18.5-45.5V447l128-128v576q0 53-37.5 90.5t-90.5 37.5zm-576-464l144 144l-208 64zm208 96l-160-159l479-480q17-16 40.5-16t40.5 16l79 80q16 16 16.5 39.5t-16.5 40.5z"/></svg>'
       editButton.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -219,7 +220,14 @@ class CalloutWidget extends WidgetType {
           selection: EditorSelection.cursor(anchor),
         }));
       });
+      editButton.style.display = 'none';
       box.appendChild(editButton);
+      box.addEventListener('mouseenter', () => {
+        editButton.style.display = '';
+      });
+      box.addEventListener('mouseleave', () => {
+        editButton.style.display = 'none';
+      })
     }
 
     box.appendChild(headerEl);
@@ -332,11 +340,13 @@ function handleEnterForCallout(view: EditorView): boolean {
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: reducedPrefix },
         selection: { anchor: line.from + reducedPrefix.length },
+        scrollIntoView: true
       });
     } else {
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: '' },
         selection: { anchor: line.from },
+        scrollIntoView: true
       });
     }
     return true;
@@ -346,6 +356,7 @@ function handleEnterForCallout(view: EditorView): boolean {
   view.dispatch({
     changes: { from: head, to: head, insert: insertText },
     selection: { anchor: head + insertText.length },
+    scrollIntoView: true
   });
 
   return true;
@@ -400,8 +411,8 @@ export const calloutExtension: Extension = [
       update.changes.iterChanges((fromA, toA) => {
         if (needsRebuild) return;
         const hitHeaderOrOutside = before.some(c =>
-          (fromA < c.headerTo && toA > c.headerFrom) ||
-          fromA < c.from || toA > c.to
+          (fromA <= c.headerTo && toA >= c.headerFrom) ||
+          fromA <= c.from || toA >= c.to
         );
         if (hitHeaderOrOutside) needsRebuild = true;
       });

@@ -166,7 +166,8 @@ const continueQuoteOnEnter = keymap.of([{
       dispatch(state.update({
         changes: { from: line.from, to: line.to, insert: '' },
         selection: { anchor: line.from },
-        userEvent: 'input'
+        userEvent: 'input',
+        scrollIntoView: true
       }));
       return true;
     }
@@ -176,7 +177,8 @@ const continueQuoteOnEnter = keymap.of([{
     dispatch(state.update({
       changes: { from, to: from, insert: `\n${prefix}` },
       selection: { anchor: from + 1 + prefix.length },
-      userEvent: 'input'
+      userEvent: 'input',
+      scrollIntoView: true
     }));
     return true;
   }
