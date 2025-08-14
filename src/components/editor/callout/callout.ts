@@ -332,11 +332,13 @@ function handleEnterForCallout(view: EditorView): boolean {
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: reducedPrefix },
         selection: { anchor: line.from + reducedPrefix.length },
+        scrollIntoView: true
       });
     } else {
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: '' },
         selection: { anchor: line.from },
+        scrollIntoView: true
       });
     }
     return true;
@@ -346,6 +348,7 @@ function handleEnterForCallout(view: EditorView): boolean {
   view.dispatch({
     changes: { from: head, to: head, insert: insertText },
     selection: { anchor: head + insertText.length },
+    scrollIntoView: true
   });
 
   return true;
@@ -400,8 +403,8 @@ export const calloutExtension: Extension = [
       update.changes.iterChanges((fromA, toA) => {
         if (needsRebuild) return;
         const hitHeaderOrOutside = before.some(c =>
-          (fromA < c.headerTo && toA > c.headerFrom) ||
-          fromA < c.from || toA > c.to
+          (fromA <= c.headerTo && toA >= c.headerFrom) ||
+          fromA <= c.from || toA >= c.to
         );
         if (hitHeaderOrOutside) needsRebuild = true;
       });
