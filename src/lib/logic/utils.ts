@@ -90,6 +90,7 @@ export async function rename(before_path: string, name: string) {
 }
 
 export async function decide_file_ext(name: string, router: Router) {
+  console.log(name);
   let ext_map = new Map();
   ext_map.set("mp3", "audio");
   ext_map.set("wav", "audio");

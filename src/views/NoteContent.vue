@@ -33,12 +33,16 @@ import { CodeBlockPlugin } from '@/components/editor/code-block/codeblock';
 import { get_note, write_note } from '@/lib/logic/md-notes';
 import { EditorView } from '@codemirror/view';
 import { useSelectionStore } from '@/lib/logic/selectorStore';
+import { decide_file_ext, get_env, rename } from '@/lib/logic/utils';
+import { useExplorerStore } from '@/lib/logic/explorerstore';
+import router from '@/router';
 
 let props = defineProps({
   url: String
 });
 let selection = useSelectionStore();
-let content = ref('');
+let content = ref<string>('');
+let filename = ref<string>('');
 const extensions = shallowRef([EditorView.lineWrapping, CodeBlockPlugin, calloutExtension, quotePlugin, headingPlugin, inlinePlugin, pageBreaker, combinedListPlugin, hashtagField]);
 function enableSelection() {
   selection.toggleTrue();
@@ -48,15 +52,27 @@ function stopSelection() {
 }
 watch(content, async () => {
   if (!props.url) { return }
-  await write_note(decodeURIComponent(atob(props.url)), content.value);
-})
-watch(() => selection.current, () => {
-  console.log(selection.current);
-})
+  let new_filename = content.value.split('\n')[0].replace('# ', '').replace('\n', '');
+  if (filename.value != new_filename && new_filename != '' && new_filename != '#') {
+    console.log(filename.value);
+    let explorer = useExplorerStore();
+    let workdir = await get_env('workdir');
+    let elder_name = filename.value
+    filename.value = new_filename;
+    await rename(decodeURIComponent(atob(props.url)).replace(workdir + explorer.current, ''), filename.value + '.md');
+    await decide_file_ext(decodeURIComponent(atob(props.url)).replace(workdir + explorer.current, '').replace(elder_name + '.md', filename.value + '.md'), router);
+  }
+  else {
+    await write_note(decodeURIComponent(atob(props.url)), content.value.replace('# ' + filename.value.replace('.md', '') + '\n', ''));
+  }
+});
 
 onMounted(async () => {
   if (!props.url) { return }
-  content.value = await get_note(decodeURIComponent(atob(props.url)));
+  console.log(decodeURIComponent(atob(props.url)));
+  filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1];
+  content.value = '# ' + filename.value.replace('.md', '') + '\n';
+  content.value += await get_note(decodeURIComponent(atob(props.url)));
 })
 </script>
 <style></style>
