@@ -59,7 +59,7 @@ watch(content, async () => {
     let workdir = await get_env('workdir');
     let elder_name = filename.value
     filename.value = new_filename;
-    await rename(decodeURIComponent(atob(props.url)).replace(workdir + explorer.current, ''), filename.value + '.md');
+    await rename(decodeURIComponent(atob(props.url)).replace(workdir, ''), filename.value + '.md');
     await decide_file_ext(decodeURIComponent(atob(props.url)).replace(workdir + explorer.current, '').replace(elder_name + '.md', filename.value + '.md'), router);
   }
   else {
