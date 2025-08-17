@@ -62,6 +62,7 @@ pub async fn create_plugins_table(url: String, app: tauri::AppHandle) -> Result<
         PluginListFields::PluginType(object.member.plugin_type),
         PluginListFields::PluginLink(url.clone()),
         PluginListFields::Installed("false".to_string()),
+        PluginListFields::Enabled("false".to_string()),
     ];
     db.create::<PluginListFields, PluginList>(
         item,
@@ -83,7 +84,12 @@ pub async fn get_list_of_plugins(key: String) -> Result<Vec<PluginList>, String>
             .await
             .map_err(|e| e.to_string())?
             .iter()
-            .filter(|e| e.get_value_by_key("intalled".to_string()).unwrap().as_str() != "false")
+            .filter(|e| {
+                e.get_value_by_key("installed".to_string())
+                    .unwrap()
+                    .as_str()
+                    != "false"
+            })
             .cloned()
             .collect::<Vec<_>>(),
         "not_installed" => db
@@ -142,4 +148,12 @@ pub async fn clone_plugin(key: String, app: tauri::AppHandle) -> Result<(), Stri
         }
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn operate_plugin(plug_name: String, val: String) -> Result<(), String> {
+    let db = DB.get().unwrap();
+    db.update(plug_name, "plugins_repo", "is_enabled".to_string(), val)
+        .await
+        .map_err(|e| e.to_string())
 }

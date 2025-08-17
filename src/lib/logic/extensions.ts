@@ -16,6 +16,16 @@
  */
 import { invoke } from "@tauri-apps/api/core";
 
+export type Plugin = {
+  plugin_name: string,
+  plugin_autor: string,
+  plugin_version: string,
+  plugin_type: string,
+  plugin_link: string,
+  is_installed: string,
+  is_enabled: string
+}
+
 export async function add_extension_tables(link: string) {
   link = link.replace('https://', '');
   let linkparts = link.split('/');
@@ -32,11 +42,22 @@ export async function add_extension_tables(link: string) {
   }
 }
 
-export async function get_plugins_list(key: string): Promise<any[]> {
-  let list = await invoke<any[]>('get_list_of_plugins', { key: key });
+export async function get_plugins_list(key: string): Promise<Plugin[]> {
+  let list = await invoke<Plugin[]>('get_list_of_plugins', { key: key });
   return list;
 }
 
 export async function install_plugin(key: string) {
   await invoke('clone_plugin', { key: key });
+}
+
+export async function changePluginState(plug_name: string, prev_val: boolean) {
+  let val: string;
+  if (prev_val) {
+    val = 'false';
+  }
+  else {
+    val = 'true';
+  }
+  await invoke('operate_plugin', { plugName: plug_name, val: val });
 }

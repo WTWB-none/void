@@ -55,7 +55,8 @@
     "installPlugins": "Install plugins",
     "selectTheme": "Select theme",
     "installedThemes": "Installed themes",
-    "changeLocale": "Select language"
+    "changeLocale": "Select language",
+    "officialPlugins": "Official plugins"
   },
   "settingsButtons": {
     "change": "Change",

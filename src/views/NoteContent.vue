@@ -14,10 +14,10 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   limitations under the License.
 -->
 <template>
-  <div class="w-full h-full pt-[3em] pl-[3em] pr-[3em]">
+  <EditorProvider>
     <CodeMirror :extensions="extensions" v-model="content" ref="Editor" class="editor" :onmousedown="enableSelection"
       :onmouseup="stopSelection" />
-  </div>
+  </EditorProvider>
 </template>
 <script setup lang="ts">
 import { onMounted, ref, shallowRef, watch } from 'vue';
@@ -35,6 +35,7 @@ import { EditorView } from '@codemirror/view';
 import { useSelectionStore } from '@/lib/logic/selectorStore';
 import { decide_file_ext, get_env, rename } from '@/lib/logic/utils';
 import { useExplorerStore } from '@/lib/logic/explorerstore';
+import EditorProvider from '@/components/editor/provider/EditorProvider.vue';
 import router from '@/router';
 
 let props = defineProps({
