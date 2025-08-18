@@ -24,19 +24,25 @@ import { useI18n } from 'vue-i18n';
 import SettingsSelector from "@/components/ui/settings/SettingsSelector.vue";
 import { useLocaleStore } from "@/lib/logic/locales";
 import SettingsSeparator from "@/components/ui/settings/SettingsSeparator.vue";
+import { Switch } from "@/components/ui/switch";
+import { Plugin, changePluginState, get_plugins_list } from "@/lib/logic/extensions";
 let workdir = ref("");
 let listOfLocales = ref(useI18n().availableLocales);
 let store = useI18n();
-let locale = useLocaleStore()
+let locale = useLocaleStore();
+let listOfPlugins = ref<{ plug: Plugin, enabled: boolean }[]>([]);
 onMounted(async () => {
   workdir.value = await getWorkdir();
-  console.log(listOfLocales.value);
+  let plugins = await get_plugins_list("installed");
+  plugins.filter((p) => { p.plugin_type == "official" });
+  plugins.forEach((p) => {
+    listOfPlugins.value.push({ plug: p, enabled: p.is_enabled === 'true' });
+  })
 });
 function set_locale(val: string) {
   locale.changeLocale(val);
   store.locale.value = val;
 }
-
 </script>
 
 <template>
@@ -51,5 +57,12 @@ function set_locale(val: string) {
     <div>{{ $t('settingsHeaders.changeLocale') }}</div>
     <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
       :current-val="locale.current" :exec-fn="set_locale" />
+  </SettingsComposition>
+  <SettingsSeparator />
+  <SettingsHeader :value="$t('settingsHeaders.officialPlugins')" />
+  <SettingsComposition v-for="plugin in listOfPlugins">
+    <div>{{ plugin.plug.plugin_name }}</div>
+    <Switch :model-value="plugin.enabled"
+      @update:model-value="async () => { await changePluginState(plugin.plug.plugin_name, plugin.enabled); plugin.enabled = !plugin.enabled }" />
   </SettingsComposition>
 </template>

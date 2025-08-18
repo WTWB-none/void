@@ -15,6 +15,24 @@
  * limitations under the License.
  */
 import { invoke } from "@tauri-apps/api/core";
+import { inlinePlugin } from "@/components/editor/inline/inline";
+import { quotePlugin } from "@/components/editor/quote/quote";
+import { headingPlugin } from "@/components/editor/headers/headers";
+import { calloutExtension } from "@/components/editor/callout/callout";
+import { hashtagField } from "@/components/editor/tags/tags";
+import { combinedListPlugin } from "@/components/editor/lists/lists";
+import { CodeBlockExtension } from "@/components/editor/code-block/codeblock";
+import { pageBreaker } from "@/components/editor/page-breaker/page-breaker";
+
+export type Plugin = {
+  plugin_name: string,
+  plugin_autor: string,
+  plugin_version: string,
+  plugin_type: string,
+  plugin_link: string,
+  is_installed: string,
+  is_enabled: string
+}
 
 export async function add_extension_tables(link: string) {
   link = link.replace('https://', '');
@@ -32,11 +50,38 @@ export async function add_extension_tables(link: string) {
   }
 }
 
-export async function get_plugins_list(key: string): Promise<any[]> {
-  let list = await invoke<any[]>('get_list_of_plugins', { key: key });
+export async function get_plugins_list(key: string): Promise<Plugin[]> {
+  let list = await invoke<Plugin[]>('get_list_of_plugins', { key: key });
   return list;
 }
 
 export async function install_plugin(key: string) {
   await invoke('clone_plugin', { key: key });
+}
+
+export async function changePluginState(plug_name: string, prev_val: boolean) {
+  let val: string;
+  if (prev_val) {
+    val = 'false';
+  }
+  else {
+    val = 'true';
+  }
+  await invoke('operate_plugin', { plugName: plug_name, val: val });
+}
+
+export async function get_official_plugin(plug_name: string): Promise<any> {
+  let plugin_map = new Map<string, any>;
+  plugin_map.set('inline', inlinePlugin);
+  plugin_map.set('code-block', CodeBlockExtension);
+  plugin_map.set('callout', calloutExtension);
+  plugin_map.set('lists', combinedListPlugin);
+  plugin_map.set('page-breaker', pageBreaker);
+  plugin_map.set('headers', headingPlugin);
+  plugin_map.set('quote', quotePlugin);
+  plugin_map.set('tags', hashtagField);
+  if (plugin_map.get(plug_name) != undefined) {
+    return plugin_map.get(plug_name);
+  }
+  return null;
 }

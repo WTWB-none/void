@@ -54,7 +54,8 @@
     "installPlugins": "Установить расширения",
     "selectTheme": "Выбрать тему",
     "installedThemes": "Установленные темы",
-    "changeLocale": "Изменить язык"
+    "changeLocale": "Изменить язык",
+    "officialPlugins": "Официальные плагины"
   },
   "settingsButtons": {
     "change": "Изменить",

@@ -110,7 +110,8 @@ pub fn run() {
             create_plugins_table,
             get_list_of_plugins,
             clone_plugin,
-            write_note_changes
+            write_note_changes,
+            operate_plugin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

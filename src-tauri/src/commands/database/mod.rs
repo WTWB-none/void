@@ -30,6 +30,35 @@ pub async fn init() {
     DB.set(db).map_err(|_| EntityError::DbQueryError).unwrap();
 }
 
+pub async fn init_official_plugins(app: tauri::AppHandle) -> Result<(), String> {
+    let db = DB.get().unwrap();
+    let official_plugins = vec![
+        "headers",
+        "callout",
+        "code-block",
+        "inline",
+        "lists",
+        "page-breaker",
+        "quote",
+        "tags",
+    ];
+    for plugin in official_plugins {
+        let plug = vec![
+            PluginListFields::Name(plugin.to_string()),
+            PluginListFields::Author("Transhumanist".to_string()),
+            PluginListFields::Version("latest".to_string()),
+            PluginListFields::PluginType("official".to_string()),
+            PluginListFields::PluginLink("none".to_string()),
+            PluginListFields::Installed("true".to_string()),
+            PluginListFields::Enabled("true".to_string()),
+        ];
+        db.create::<PluginListFields, PluginList>(plug, app.clone(), "plugins_repo", plugin)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn create_first_database(app: tauri::AppHandle) -> Result<(), String> {
     init().await;
@@ -48,9 +77,15 @@ pub async fn create_first_database(app: tauri::AppHandle) -> Result<(), String> 
             ];
             DB.get()
                 .unwrap()
-                .create::<MainConfigFields, MainConfig>(input, app, "main_config", "singletone")
+                .create::<MainConfigFields, MainConfig>(
+                    input,
+                    app.clone(),
+                    "main_config",
+                    "singletone",
+                )
                 .await
-                .map_err(|e| e.to_string())
+                .map_err(|e| e.to_string())?;
+            init_official_plugins(app).await
         }
     }
 }
