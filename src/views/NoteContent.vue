@@ -15,21 +15,13 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <template>
   <EditorProvider>
-    <CodeMirror :extensions="extensions" v-model="content" ref="Editor" class="editor" :onmousedown="enableSelection"
+    <CodeMirror ref="cm" :extensions="extensions" v-model="content" class="editor" :onmousedown="enableSelection"
       :onmouseup="stopSelection" />
   </EditorProvider>
 </template>
 <script setup lang="ts">
 import { onMounted, ref, shallowRef, watch } from 'vue';
 import CodeMirror from 'vue-codemirror6';
-import { headingPlugin } from '@/components/editor/headers/headers';
-import { pageBreaker } from '@/components/editor/page-breaker/page-breaker';
-import { inlinePlugin } from '@/components/editor/inline/inline';
-import { quotePlugin } from '@/components/editor/quote/quote';
-import { combinedListPlugin } from '@/components/editor/lists/lists';
-import { calloutExtension } from '@/components/editor/callout/callout';
-import { hashtagField } from '@/components/editor/tags/tags';
-import { CodeBlockPlugin } from '@/components/editor/code-block/codeblock';
 import { get_note, write_note } from '@/lib/logic/md-notes';
 import { EditorView } from '@codemirror/view';
 import { useSelectionStore } from '@/lib/logic/selectorStore';
@@ -37,14 +29,17 @@ import { decide_file_ext, get_env, rename } from '@/lib/logic/utils';
 import { useExplorerStore } from '@/lib/logic/explorerstore';
 import EditorProvider from '@/components/editor/provider/EditorProvider.vue';
 import router from '@/router';
-
+import { get_official_plugin, get_plugins_list } from '@/lib/logic/extensions';
+import { Compartment } from '@codemirror/state';
+let cm = ref<InstanceType<typeof CodeMirror>>();
 let props = defineProps({
   url: String
 });
 let selection = useSelectionStore();
 let content = ref<string>('');
 let filename = ref<string>('');
-const extensions = shallowRef([EditorView.lineWrapping, CodeBlockPlugin, calloutExtension, quotePlugin, headingPlugin, inlinePlugin, pageBreaker, combinedListPlugin, hashtagField]);
+const pluginCompartment = new Compartment();
+const extensions = shallowRef([EditorView.lineWrapping, pluginCompartment.of([])]);
 function enableSelection() {
   selection.toggleTrue();
 }
@@ -74,6 +69,24 @@ onMounted(async () => {
   filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1];
   content.value = '# ' + filename.value.replace('.md', '') + '\n';
   content.value += await get_note(decodeURIComponent(atob(props.url)));
+  let enabled_extensions = await get_plugins_list('installed');
+  let filt = enabled_extensions.filter((v) => { if (v.plugin_type == 'official') { return v } });
+  filt = filt.filter((v) => { if (v.is_enabled == 'true') { return v } });
+  const orderMap: Record<string, number> = { callout: 0, quote: 1 };
+  const order = (name: string) => (name in orderMap ? orderMap[name] : 2);
+
+  filt.sort((a, b) => {
+    const oa = order(a.plugin_name);
+    const ob = order(b.plugin_name);
+    if (oa !== ob) return oa - ob;
+    return a.plugin_name.localeCompare(b.plugin_name);
+  });
+  let loaded = await Promise.all(filt.map((p) => get_official_plugin(p.plugin_name)));
+  loaded = loaded.filter((p) => { if (p !== null) { return p } });
+  extensions.value = [...extensions.value, loaded.flat()];
+  requestAnimationFrame(() => {
+    if (cm.value == undefined) return;
+    cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
+  })
 })
 </script>
-<style></style>
