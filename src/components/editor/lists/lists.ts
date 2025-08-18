@@ -120,7 +120,7 @@ const listExtension = ViewPlugin.fromClass(
               );
             }
           } else {
-            const bulletMatch = /([ \t]*)-\s/.exec(line.text);
+            const bulletMatch = /^([ \t]*)-\s/.exec(line.text);
             if (bulletMatch && bulletMatch.index !== undefined) {
               const indent = bulletMatch[1];
               const restOfLine = line.text.substring(bulletMatch[0].length);
@@ -203,10 +203,9 @@ function handleEnter(view: EditorView): boolean {
     return true;
   }
 
-  const bulletMatch = /([ \t]*)(-)(\s)(.*)$/.exec(line.text);
+  const bulletMatch = /^([ \t]*)(-)(\s)(.*)$/.exec(line.text);
   if (bulletMatch) {
     const content = bulletMatch[4];
-    // Убеждаемся, что это не todo item
     if (!content.match(/^\[[ x]\]/)) {
       const indent = bulletMatch[1];
       const prefix = bulletMatch[2];
