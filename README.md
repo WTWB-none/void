@@ -13,6 +13,18 @@ I could never find an app that combined all my needs as a second-brain tool. And
 * **💪 Flexible plugin system**: A wide range of pre-installed plugins, and if that’s not enough, you can easily create your own!
 * **🚀 Fast and efficient**: The app is built with Rust and focused on performance!
 
+## 💬 Join the Discussion
+
+VOID now has [GitHub Discussions](https://github.com/WTWB-none/void/discussions)!  
+This is the place where we talk about:
+
+-  New features and plugin ideas  
+-  Bug reports and possible fixes  
+-  UI/UX suggestions  
+-  Collaboration and contributions  
+
+Jump in, share your ideas, and help shape the future of VOID!
+
 ## 📝 How to install and run VOID
 
 > 🛠 **Note**: Rust is required for all systems. 
@@ -214,9 +226,6 @@ npm run tauri dev
 * **Backend**: Rust, Tauri
 * **Database**: SurrealDB (for configuration and possibly user databases)
 
-## 🗐️ Roadmap
-
-Still under development, I'll share plans soon.
 
 ## 📝 Contact the Developer
 
@@ -229,11 +238,11 @@ You can support the project on [Boosty](https://boosty.to/void_project) and on [
 If this project can replace my job, I can devote more time to its development and release it faster.
 Everyone who supports the project will be mentioned on the official site and in the "Sponsors" section of the app.
 
+
 ## Socials
 You can check our updates in 
 [Telegram](https://t.me/void_project_tg)
-[Reddit](https://reddit.com/r/void_foss)
-[X](https://x.com/void_project_x)
+
 
 ## 📄 License
 
