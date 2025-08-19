@@ -18,7 +18,7 @@ I could never find an app that combined all my needs as a second-brain tool. And
 The VOID editor is now **fully working** 🎉  
 Check out how it looks in action:
 
-![VOID Editor Demo](assets/editor-demo.gif)
+![VOID Editor Demo](https://github.com/WTWB-none/void/raw/refs/heads/main/src/assets/editor.mp4)
 
 ## 💬 Join the Discussion
 
