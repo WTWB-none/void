@@ -1,4 +1,4 @@
-![alt](https://github.com/WTWB-none/mindbreaker/blob/main/src-tauri/icons/128x128@2x.png?raw=true)
+![alt](https://github.com/WTWB-none/void/blob/main/src-tauri/icons/128x128@2x.png?raw=true)
 # 🧠 VOID 🧠
 
 I could never find an app that combined all my needs as a second-brain tool. And that's how the idea for this project was born!
@@ -18,7 +18,7 @@ I could never find an app that combined all my needs as a second-brain tool. And
 The VOID editor is now **fully working** 🎉  
 Check out how it looks in action:
 
-![VOID Editor Demo](https://github.com/WTWB-none/mindbreaker/blob/main/src/assets/editor.mp4?raw=true)
+![VOID Editor Demo](https://github.com/WTWB-none/void/blob/main/src/assets/editor.mp4?raw=true)
 
 ## 💬 Join the Discussion
 
