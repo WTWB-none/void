@@ -13,6 +13,13 @@ I could never find an app that combined all my needs as a second-brain tool. And
 * **💪 Flexible plugin system**: A wide range of pre-installed plugins, and if that’s not enough, you can easily create your own!
 * **🚀 Fast and efficient**: The app is built with Rust and focused on performance!
 
+## 🚀 Editor is Ready!
+
+The VOID editor is now **fully working** 🎉  
+Check out how it looks in action:
+
+![VOID Editor Demo](assets/editor-demo.gif)
+
 ## 💬 Join the Discussion
 
 VOID now has [GitHub Discussions](https://github.com/WTWB-none/void/discussions)!  
