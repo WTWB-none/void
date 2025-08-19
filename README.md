@@ -5,10 +5,6 @@ I could never find an app that combined all my needs as a second-brain tool. And
 
 ## 🔑 Key differences from popular second-brain apps
 
-
-https://github.com/user-attachments/assets/d64abf65-5465-4691-b532-53b45f8bea3c
-
-
 * **🔮 Rich functionality**: The application was conceived as a hybrid of Notion and Obsidian. I hope I can satisfy all your (and my)) needs!
 * **🔐 Local-first**: Your data is stored locally! No third-party servers! Your secrets remain yours!
 * **⚓️‍💥 Open-source**: The code is fully open and available to everyone on GitHub!
@@ -22,7 +18,7 @@ https://github.com/user-attachments/assets/d64abf65-5465-4691-b532-53b45f8bea3c
 The VOID editor is now **fully working** 🎉  
 Check out how it looks in action:
 
-![VOID Editor Demo](https://github.com/WTWB-none/void/blob/main/src/assets/editor.mp4?raw=true)
+https://github.com/user-attachments/assets/d64abf65-5465-4691-b532-53b45f8bea3c
 
 ## 💬 Join the Discussion
 
