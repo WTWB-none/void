@@ -1,6 +1,6 @@
 <template>
   <div class="separator-container">
-    <div class="h-1 separator"></div>
+    <div class="h-1  separator"></div>
   </div>
 </template>
 <style scoped>
@@ -8,8 +8,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 65%;
-  margin: 1em;
+  width: 60%;
+  margin-left: 40px;
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 
 .separator {

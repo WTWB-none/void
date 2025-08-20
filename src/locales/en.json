@@ -47,7 +47,8 @@
     "settingsLabel": "Settings",
     "general": "General",
     "sideRepos": "Custom Repositories",
-    "language": "Language"
+    "language": "Language",
+    "editorMode": "Mode"
   },
   "settingsHeaders": {
     "installedRepos": "Installed Repos",
@@ -56,7 +57,8 @@
     "selectTheme": "Select theme",
     "installedThemes": "Installed themes",
     "changeLocale": "Select language",
-    "officialPlugins": "Official plugins"
+    "officialPlugins": "Official plugins",
+    "editorSettings": "Editor settings"
   },
   "settingsButtons": {
     "change": "Change",
@@ -78,5 +80,8 @@
   },
   "welcomeSetup": {
     "namePrompt": "What should I call you?"
+  },
+  "settings": {
+    "editorMode": "Open new notes by default in mode"
   }
 }
