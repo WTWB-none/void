@@ -21,10 +21,16 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
     <SettingsButton @click="async () => { workdir = await changeWorkdir(); }" :name="$t('settingsButtons.change')" />
   </SettingsComposition>
   <SettingsSeparator />
+  <SettingsHeader :value="$t('settingsHeaders.editorSettings')" />
   <SettingsComposition>
     <div>{{ $t('settingsHeaders.changeLocale') }}</div>
     <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
       :current-val="locale.current" :exec-fn="set_locale" />
+  </SettingsComposition>
+  <SettingsComposition>
+    <div>{{ $t("settings.editorMode") }}</div>
+    <SettingsSelector :selector-placeholder="$t('settingsSelector.editorMode')" :val-list="['read', 'write']"
+      :current-val="defaultEditorMode" :exec-fn="setEditorDefaultState" />
   </SettingsComposition>
   <SettingsSeparator />
   <SettingsHeader :value="$t('settingsHeaders.officialPlugins')" />
@@ -32,12 +38,6 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
     <div>{{ plugin.plug.plugin_name }}</div>
     <Switch :model-value="plugin.enabled"
       @update:model-value="async () => { await changePluginState(plugin.plug.plugin_name, plugin.enabled); plugin.enabled = !plugin.enabled }" />
-  </SettingsComposition>
-  <SettingsHeader value="Настройки редактора" />
-  <SettingsComposition>
-    <div>Открывать заметки по умолчанию в режиме</div>
-    <SettingsSelector selector-placeholder="Режим" :val-list="['read', 'write']" :current-val="defaultEditorMode"
-      :exec-fn="setEditorDefaultState" />
   </SettingsComposition>
 </template>
 
