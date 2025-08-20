@@ -13,38 +13,6 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<script setup lang="ts">
-import { changeWorkdir, getWorkdir } from "@/lib/logic/settings";
-import { onMounted, ref } from "vue";
-import SettingsButton from "@/components/ui/settings/SettingsButton.vue";
-import SettingsHeader from "@/components/ui/settings/SettingsHeader.vue";
-import SettingsField from "@/components/ui/settings/SettingsField.vue";
-import SettingsComposition from "@/components/ui/settings/SettingsComposition.vue";
-import { useI18n } from 'vue-i18n';
-import SettingsSelector from "@/components/ui/settings/SettingsSelector.vue";
-import { useLocaleStore } from "@/lib/logic/locales";
-import SettingsSeparator from "@/components/ui/settings/SettingsSeparator.vue";
-import { Switch } from "@/components/ui/switch";
-import { Plugin, changePluginState, get_plugins_list } from "@/lib/logic/extensions";
-let workdir = ref("");
-let listOfLocales = ref(useI18n().availableLocales);
-let store = useI18n();
-let locale = useLocaleStore();
-let listOfPlugins = ref<{ plug: Plugin, enabled: boolean }[]>([]);
-onMounted(async () => {
-  workdir.value = await getWorkdir();
-  let plugins = await get_plugins_list("installed");
-  plugins.filter((p) => { p.plugin_type == "official" });
-  plugins.forEach((p) => {
-    listOfPlugins.value.push({ plug: p, enabled: p.is_enabled === 'true' });
-  })
-});
-function set_locale(val: string) {
-  locale.changeLocale(val);
-  store.locale.value = val;
-}
-</script>
-
 <template>
   <h1 class="text-4xl text-center text-accent mt-2">{{ $t('common.general') }}</h1>
   <SettingsHeader :value="$t('settingsHeaders.changeWorkdir')" />
@@ -65,4 +33,56 @@ function set_locale(val: string) {
     <Switch :model-value="plugin.enabled"
       @update:model-value="async () => { await changePluginState(plugin.plug.plugin_name, plugin.enabled); plugin.enabled = !plugin.enabled }" />
   </SettingsComposition>
+  <SettingsHeader value="Настройки редактора" />
+  <SettingsComposition>
+    <div>Открывать заметки по умолчанию в режиме</div>
+    <SettingsSelector selector-placeholder="Режим" :val-list="['read', 'write']" :current-val="defaultEditorMode"
+      :exec-fn="setEditorDefaultState" />
+  </SettingsComposition>
 </template>
+
+<script setup lang="ts">
+import { changeWorkdir, getWorkdir } from "@/lib/logic/settings";
+import { onMounted, ref } from "vue";
+import SettingsButton from "@/components/ui/settings/SettingsButton.vue";
+import SettingsHeader from "@/components/ui/settings/SettingsHeader.vue";
+import SettingsField from "@/components/ui/settings/SettingsField.vue";
+import SettingsComposition from "@/components/ui/settings/SettingsComposition.vue";
+import { useI18n } from 'vue-i18n';
+import SettingsSelector from "@/components/ui/settings/SettingsSelector.vue";
+import { useLocaleStore } from "@/lib/logic/locales";
+import SettingsSeparator from "@/components/ui/settings/SettingsSeparator.vue";
+import { Switch } from "@/components/ui/switch";
+import { Plugin, changePluginState, get_plugins_list } from "@/lib/logic/extensions";
+let workdir = ref("");
+let listOfLocales = ref(useI18n().availableLocales);
+let store = useI18n();
+let locale = useLocaleStore();
+let listOfPlugins = ref<{ plug: Plugin, enabled: boolean }[]>([]);
+let defaultEditorMode = ref('');
+onMounted(async () => {
+  workdir.value = await getWorkdir();
+  let plugins = await get_plugins_list("installed");
+  plugins.filter((p) => { p.plugin_type == "official" });
+  plugins.forEach((p) => {
+    listOfPlugins.value.push({ plug: p, enabled: p.is_enabled === 'true' });
+  })
+  let ed = localStorage.getItem('mindbreaker:editorDefaults');
+  if (ed != null) {
+    defaultEditorMode.value = ed;
+  }
+  else {
+    localStorage.setItem('mindbreaker:editorDefaults', 'write');
+    defaultEditorMode.value = 'write';
+  }
+});
+function set_locale(val: string) {
+  locale.changeLocale(val);
+  store.locale.value = val;
+}
+
+function setEditorDefaultState(val: string) {
+  localStorage.setItem('mindbreaker:editorDefaults', val);
+  defaultEditorMode.value = val;
+}
+</script>
