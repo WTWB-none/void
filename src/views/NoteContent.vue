@@ -16,7 +16,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 <template>
   <EditorProvider>
     <CodeMirror ref="cm" :extensions="extensions" v-model="content" class="editor" :onmousedown="enableSelection"
-      :onmouseup="stopSelection" />
+      :onmouseup="stopSelection" :disabled="editorDefaults" />
   </EditorProvider>
 </template>
 <script setup lang="ts">
@@ -30,16 +30,16 @@ import { useExplorerStore } from '@/lib/logic/explorerstore';
 import EditorProvider from '@/components/editor/provider/EditorProvider.vue';
 import router from '@/router';
 import { get_official_plugin, get_plugins_list } from '@/lib/logic/extensions';
-import { Compartment } from '@codemirror/state';
+import { EditorState } from '@codemirror/state';
 let cm = ref<InstanceType<typeof CodeMirror>>();
 let props = defineProps({
   url: String
 });
+let editorDefaults = ref<boolean>(localStorage.getItem('mindbreaker:editorDefaults') == 'read');
 let selection = useSelectionStore();
 let content = ref<string>('');
 let filename = ref<string>('');
-const pluginCompartment = new Compartment();
-const extensions = shallowRef([EditorView.lineWrapping, pluginCompartment.of([])]);
+const extensions = shallowRef([EditorView.lineWrapping, EditorState.readOnly.of(false)])
 function enableSelection() {
   selection.toggleTrue();
 }
@@ -50,7 +50,6 @@ watch(content, async () => {
   if (!props.url) { return }
   let new_filename = content.value.split('\n')[0].replace('# ', '').replace('\n', '');
   if (filename.value != new_filename && new_filename != '' && new_filename != '#') {
-    console.log(filename.value);
     let explorer = useExplorerStore();
     let workdir = await get_env('workdir');
     let elder_name = filename.value
@@ -65,7 +64,6 @@ watch(content, async () => {
 
 onMounted(async () => {
   if (!props.url) { return }
-  console.log(decodeURIComponent(atob(props.url)));
   filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1];
   content.value = '# ' + filename.value.replace('.md', '') + '\n';
   content.value += await get_note(decodeURIComponent(atob(props.url)));
@@ -87,6 +85,11 @@ onMounted(async () => {
   requestAnimationFrame(() => {
     if (cm.value == undefined) return;
     cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
+  })
+  document.addEventListener('keypress', (e) => {
+    if (e.metaKey && e.key == 'e') {
+      editorDefaults.value = !editorDefaults.value;
+    }
   })
 })
 </script>
