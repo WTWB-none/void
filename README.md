@@ -240,7 +240,7 @@ If you have any suggestions, feel free to contact me on Telegram [@iomanip](http
 
 ## 💵 Support the Project
 
-You can support the project on [Boosty](https://boosty.to/void_project) and on [Patreon](https://patreon.com/c/transhuman1st)
+You can support the project on [Boosty](https://boosty.to/void_project) 
 
 If this project can replace my job, I can devote more time to its development and release it faster.
 Everyone who supports the project will be mentioned on the official site and in the "Sponsors" section of the app.
