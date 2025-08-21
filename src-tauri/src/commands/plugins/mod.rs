@@ -17,6 +17,8 @@ use rust_fetch::reqwest;
 use serde::Deserialize;
 use tauri::Emitter;
 
+use crate::MAIN_FOLDER_PREFIX;
+
 use super::{DB, EntityControl, PluginList, PluginListFields, add_repo};
 
 #[derive(Deserialize)]
@@ -110,15 +112,13 @@ pub async fn get_list_of_plugins(key: String) -> Result<Vec<PluginList>, String>
     Ok(result)
 }
 #[tauri::command]
-pub async fn clone_plugin(key: String, app: tauri::AppHandle) -> Result<(), String> {
+pub async fn clone_plugin(key: String) -> Result<(), String> {
     let db = DB.get().unwrap();
-    let workdir = super::get_env("workdir".to_string(), app.clone())
-        .await
-        .map_err(|e| e.to_string())?;
     let plugin = db
         .get::<PluginList>(key.as_str(), "plugins_repo")
         .await
         .unwrap();
+    let plugin_dir = MAIN_FOLDER_PREFIX.get().unwrap().join("plugins");
 
     let _ = git2::Repository::clone(
         format!(
@@ -126,7 +126,7 @@ pub async fn clone_plugin(key: String, app: tauri::AppHandle) -> Result<(), Stri
             plugin.get_value_by_key("link".to_string()).unwrap()
         )
         .as_str(),
-        format!("{}/.conf/plugins/", workdir).as_str(),
+        plugin_dir,
     )
     .map_err(|e| e.to_string())?;
     let extensions = db

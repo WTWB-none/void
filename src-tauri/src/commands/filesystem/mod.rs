@@ -19,6 +19,7 @@ use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 
 use super::get_env;
+use crate::MAIN_FOLDER_PREFIX;
 
 #[tauri::command]
 pub fn get_file(ipath: String) -> Vec<u8> {
@@ -29,12 +30,9 @@ pub fn get_file(ipath: String) -> Vec<u8> {
 
 #[tauri::command]
 pub async fn setup_config_directory(app: tauri::AppHandle) -> Result<(), String> {
-    let workdir_conf = super::get_env("workdir".to_string(), app.clone())
-        .await
-        .unwrap()
-        + "/.conf";
-    let plugins_conf = workdir_conf.clone() + "/plugins";
-    let themes_conf = workdir_conf + "/themes";
+    let workdir_conf = MAIN_FOLDER_PREFIX.get().unwrap();
+    let plugins_conf = workdir_conf.clone().join("plugins");
+    let themes_conf = workdir_conf.join("themes");
     let themes_path = Path::new(&themes_conf);
     let plugins_path = Path::new(&plugins_conf);
     fs::create_dir_all(themes_path).unwrap();

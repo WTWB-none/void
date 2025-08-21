@@ -1,3 +1,5 @@
+use crate::MAIN_FOLDER_PREFIX;
+
 /**
  * Copyright 2025 The VOID Authors. All Rights Reserved.
  *
@@ -13,9 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use super::{
-    DB, EntityControl, EntityError, MainConfig, ThemeRepo, ThemeRepoField, add_repo, get_env,
-};
+use super::{DB, EntityControl, EntityError, ThemeRepo, ThemeRepoField, add_repo};
 use rust_fetch::reqwest;
 use serde::Deserialize;
 use std::{fs, vec};
@@ -37,18 +37,13 @@ struct ThemeManifestMember {
 
 #[tauri::command]
 pub async fn get_theme(name: String, _app: tauri::AppHandle) -> Result<String, String> {
-    let config = DB
+    let theme = MAIN_FOLDER_PREFIX
         .get()
         .unwrap()
-        .get::<MainConfig>("singletone", "main_config")
-        .await
-        .map_err(|e| e.to_string())?;
-    let workdir = config
-        .get_value_by_key("workdir".to_string())
-        .map_err(|e| e.to_string())?;
-    let path = format!("{}/.conf/themes/{}/theme.css", workdir, name);
-    let path = std::path::Path::new(&path);
-    fs::read_to_string(path).map_err(|e| e.to_string())
+        .join("themes")
+        .join(name)
+        .join("theme.css");
+    fs::read_to_string(theme).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -134,7 +129,6 @@ pub async fn clone_theme(key: String, app: tauri::AppHandle) -> Result<(), Strin
         .await
         .map_err(|e| e.to_string())?;
     let mut selected_theme: Option<ThemeRepo> = None;
-    let workdir = get_env("workdir".to_string(), app.clone()).await.unwrap();
     for theme in themes_list {
         if theme
             .get_value_by_key("name".to_string())
@@ -146,6 +140,7 @@ pub async fn clone_theme(key: String, app: tauri::AppHandle) -> Result<(), Strin
     }
     match selected_theme {
         Some(theme) => {
+            let db = DB.get().unwrap();
             let client = reqwest::Client::new();
             let theme_css = client
                 .get(theme.get_value_by_key("link".to_string()).unwrap())
@@ -161,12 +156,14 @@ pub async fn clone_theme(key: String, app: tauri::AppHandle) -> Result<(), Strin
             .await
             .map_err(|e| e.to_string())?;
             let theme_css = theme_css.text().await.map_err(|e| e.to_string())?;
-            let theme_dir = format!("{}/.conf/themes/{}", workdir, key.clone());
-            let theme_dir_path = std::path::Path::new(&theme_dir);
-            let theme_file = format!("{}/theme.css", theme_dir);
-            let theme_file_path = std::path::Path::new(&theme_file);
-            fs::create_dir(theme_dir_path).map_err(|e| e.to_string())?;
-            fs::write(theme_file_path, theme_css).map_err(|e| e.to_string())?;
+            let theme_dir = MAIN_FOLDER_PREFIX
+                .get()
+                .unwrap()
+                .join("themes")
+                .join(key.clone());
+            let theme_file = theme_dir.join("theme.css");
+            fs::create_dir(theme_dir).map_err(|e| e.to_string())?;
+            fs::write(theme_file, theme_css).map_err(|e| e.to_string())?;
         }
         None => return Err(EntityError::NotFound.to_string()),
     }
@@ -192,12 +189,12 @@ pub async fn check_theme_update(theme_name: String, app: tauri::AppHandle) -> Re
         .unwrap();
     let prev_theme = get_theme(theme_name.clone(), app.clone()).await.unwrap();
     if prev_theme != css {
-        let sp = format!(
-            "{}/.conf/themes/{}/theme.css",
-            get_env("workdir".to_string(), app.clone()).await.unwrap(),
-            theme_name
-        );
-        let theme_path = std::path::Path::new(&sp);
+        let theme_path = MAIN_FOLDER_PREFIX
+            .get()
+            .unwrap()
+            .join("themes")
+            .join(theme_name)
+            .join("theme.css");
         std::fs::write(theme_path, css).unwrap();
     } else {
         app.emit("notify", "Установлена последняя версия темы")
@@ -209,10 +206,12 @@ pub async fn check_theme_update(theme_name: String, app: tauri::AppHandle) -> Re
 #[tauri::command]
 pub async fn delete_theme(theme_name: String, app: tauri::AppHandle) -> Result<(), String> {
     let db = DB.get().unwrap();
-    let workdir = get_env("workdir".to_string(), app.clone()).await?;
-    let theme_dir = format!("{}/.conf/themes/{}", workdir, theme_name);
-    let path = std::path::Path::new(&theme_dir);
-    std::fs::remove_dir_all(path).map_err(|e| e.to_string())?;
+    let theme_dir = MAIN_FOLDER_PREFIX
+        .get()
+        .unwrap()
+        .join("themes")
+        .join("theme_name");
+    std::fs::remove_dir_all(theme_dir).map_err(|e| e.to_string())?;
     db.update(
         theme_name,
         "themes_repo",
