@@ -18,7 +18,9 @@ I could never find an app that combined all my needs as a second-brain tool. And
 The VOID editor is now **fully working** 🎉  
 Check out how it looks in action:
 
+
 https://github.com/user-attachments/assets/d668923e-eb53-4ad3-a23c-9da20b2da583
+
 
 ## 💬 Join the Discussion
 
