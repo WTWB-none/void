@@ -51,6 +51,9 @@ pub fn run() {
                             .join("void"),
                     )
                     .unwrap();
+                app.fs_scope()
+                    .allow_directory(MAIN_FOLDER_PREFIX.get().unwrap(), true)
+                    .unwrap();
                 if let Err(e) = create_first_database(app.handle().clone()).await {
                     eprintln!("Ошибка при инициализации{}", e);
                 }
@@ -111,7 +114,8 @@ pub fn run() {
             get_list_of_plugins,
             clone_plugin,
             write_note_changes,
-            operate_plugin
+            operate_plugin,
+            get_config_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

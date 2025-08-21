@@ -21,6 +21,7 @@ import { onMounted, ref, watch } from "vue";
 import type { Component } from "vue";
 import { getUsername, getWorkdir } from "@/lib/logic/settings";
 import { checkShowable, get_file_content } from "@/lib/logic/utils";
+import { invoke } from "@tauri-apps/api/core";
 
 const uname = ref("");
 const pic = ref();
@@ -54,7 +55,8 @@ onMounted(async () => {
   uname.value = await getUsername();
   workdir.value = await getWorkdir();
   showCard.value = checkShowable();
-  const profile_pic = workdir.value + "/profile.png";
+  let profile_pic = await invoke<string>('get_config_directory');
+  profile_pic += '/profile.png';
   pic.value = await get_file_content(profile_pic);
 
   window.addEventListener("resize", () => {
@@ -71,14 +73,11 @@ onMounted(async () => {
       <Card :uname="uname" :pic="pic" />
     </div>
     <div class="fixed right-[6%] top-[15%]">
-      <SettingsSelector
-        v-model="settings_type"
-        @select="
-          async () => {
-            settingsComponent = await get_settings(settings_type);
-          }
-        "
-      />
+      <SettingsSelector v-model="settings_type" @select="
+        async () => {
+          settingsComponent = await get_settings(settings_type);
+        }
+      " />
     </div>
   </div>
 </template>
