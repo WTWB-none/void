@@ -32,7 +32,7 @@ onMounted(() => {
   <div class="marketplace-backdrop" @click="(event) => (show = closePopup(event))">
     <div
       class="flex flex-col justify-evenly items-center gap-[1em] w-[80%] bg-[var(--card)] rounded-[var(--radius)] border-[1px solid var(--border)]">
-      <h1 class="text-accent text-4xl">{{ $t('general.download') }}</h1>
+      <h1 class="text-accent text-4xl">{{ $t('common.download') }}</h1>
       <div class="download-type">
         <SettingsButton :class="activeTab == 'themes' ? 'active' : 'inactive'" name="Темы"
           @click="changeType('themes')" />
