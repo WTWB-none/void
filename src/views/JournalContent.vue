@@ -28,14 +28,16 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
         bg-black/20 text-white text-3xl rounded-full w-14 h-14 flex items-center justify-center
         opacity-0 scale-90 invisible pointer-events-none
         group-hover:opacity-100 group-hover:scale-100 group-hover:visible group-hover:pointer-events-auto
-        hover:bg-black/40 transition-all duration-200 z-30" @click="prevPage" :disabled="currentPage <= 1" :tabindex="-1" aria-label="Следующая страница">→</button>
+        hover:bg-black/40 transition-all duration-200 z-30" @click="prevPage" :disabled="currentPage <= 1"
+      :tabindex="-1" aria-label="Следующая страница">
+      -</button>
 
     <button class="absolute right-2 top-1/2 -translate-y-1/2 mr-[1em]
         bg-black/20 text-white text-3xl rounded-full w-14 h-14 flex items-center justify-center
         opacity-0 scale-90 invisible pointer-events-none
         group-hover:opacity-100 group-hover:scale-100 group-hover:visible group-hover:pointer-events-auto
         hover:bg-black/40 transition-all duration-200 z-30" @click="nextPage" :disabled="currentPage >= pageCount"
-      :tabindex="-1" aria-label="Next page">→</button>
+      :tabindex="-1" aria-label="Next page">+</button>
     <div class="flex gap-2 items-center justify-center
         absolute left-1/2 bottom-8 -translate-x-1/2
         opacity-0 scale-90 invisible pointer-events-none

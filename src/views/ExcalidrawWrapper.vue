@@ -44,7 +44,6 @@ const drawingData = ref<ExcalidrawData>({
     offsetLeft: 0,
   }
 });
-const initializationError = ref<string | null>(null);
 const filePath = ref<string>('');
 const file_path = ref<string>('');
 const waiting = ref<boolean>(false);
@@ -55,7 +54,7 @@ const initializeApp = async () => {
     const module = await import('@excalidraw/excalidraw');
     ExcalidrawReact.value = applyReactInVue(module.Excalidraw);
   } catch (error) {
-    initializationError.value = `Ошибка загрузки: ${error instanceof Error ? error.message : String(error)}`; // TODO: add i18n interpolation
+    console.error('failed to start excalidraw');
   }
 };
 
