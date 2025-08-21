@@ -248,7 +248,10 @@ Everyone who supports the project will be mentioned on the official site and in 
 
 ## Socials
 You can check our updates in 
+
 [Telegram](https://t.me/void_project_tg)
+
+[Lemmy](https://lemmy.ml/c/void)
 
 
 ## 📄 License
