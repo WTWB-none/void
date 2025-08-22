@@ -30,7 +30,6 @@ import { useExplorerStore } from '@/lib/logic/explorerstore';
 import EditorProvider from '@/components/editor/provider/EditorProvider.vue';
 import router from '@/router';
 import { get_official_plugin, get_plugins_list } from '@/lib/logic/extensions';
-import { EditorState } from '@codemirror/state';
 let cm = ref<InstanceType<typeof CodeMirror>>();
 let props = defineProps({
   url: String
@@ -39,7 +38,7 @@ let editorDefaults = ref<boolean>(localStorage.getItem('mindbreaker:editorDefaul
 let selection = useSelectionStore();
 let content = ref<string>('');
 let filename = ref<string>('');
-const extensions = shallowRef([EditorView.lineWrapping, EditorState.readOnly.of(false)])
+const extensions = shallowRef([EditorView.lineWrapping])
 function enableSelection() {
   selection.toggleTrue();
 }

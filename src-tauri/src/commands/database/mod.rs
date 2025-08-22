@@ -41,6 +41,7 @@ pub async fn init_official_plugins(app: tauri::AppHandle) -> Result<(), String> 
         "page-breaker",
         "quote",
         "tags",
+        "line-numbers",
     ];
     for plugin in official_plugins {
         let plug = vec![

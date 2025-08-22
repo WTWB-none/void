@@ -30,6 +30,11 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   </SettingsComposition>
   <SettingsSeparator />
   <SettingsHeader :value="$t('settingsHeaders.editorSettings')" />
+  <SettingsComposition v-for="ed in lineNumbers">
+    <p>Нумерация строк в редакторе</p>
+    <Switch :model-value="ed.enabled"
+      @update:model-value="async () => { await changePluginState(ed.plug.plugin_name, ed.enabled); ed.enabled = !ed.enabled }" />
+  </SettingsComposition>
   <SettingsComposition>
     <div>{{ $t('settingsHeaders.changeLocale') }}</div>
     <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
@@ -68,11 +73,14 @@ let store = useI18n();
 let locale = useLocaleStore();
 let listOfPlugins = ref<{ plug: Plugin, enabled: boolean }[]>([]);
 let defaultEditorMode = ref('');
+let lineNumbers = ref<{ plug: Plugin, enabled: boolean }[]>([]);
 onMounted(async () => {
   workdir.value = await getWorkdir();
   let plugins = await get_plugins_list("installed");
-  plugins.filter((p) => { p.plugin_type == "official" });
-  plugins.forEach((p) => {
+  let plugin = plugins.filter((p) => { if (p.plugin_name == "line-numbers") return p })[0];
+  lineNumbers.value?.push({ plug: plugin, enabled: plugin.is_enabled === 'true' });
+  let a = plugins.filter((p) => { if (p.plugin_type == "official" && p.plugin_name != 'line-numbers') return p });
+  a.forEach((p) => {
     listOfPlugins.value.push({ plug: p, enabled: p.is_enabled === 'true' });
   })
   let ed = localStorage.getItem('mindbreaker:editorDefaults');

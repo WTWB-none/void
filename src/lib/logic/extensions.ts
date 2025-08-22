@@ -23,6 +23,7 @@ import { hashtagField } from "@/components/editor/tags/tags";
 import { combinedListPlugin } from "@/components/editor/lists/lists";
 import { CodeBlockExtension } from "@/components/editor/code-block/codeblock";
 import { pageBreaker } from "@/components/editor/page-breaker/page-breaker";
+import { lineNumbers } from "@codemirror/view";
 
 export type Plugin = {
   plugin_name: string,
@@ -80,6 +81,7 @@ export async function get_official_plugin(plug_name: string): Promise<any> {
   plugin_map.set('headers', headingPlugin);
   plugin_map.set('quote', quotePlugin);
   plugin_map.set('tags', hashtagField);
+  plugin_map.set('line-numbers', lineNumbers())
   if (plugin_map.get(plug_name) != undefined) {
     return plugin_map.get(plug_name);
   }
