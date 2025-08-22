@@ -37,11 +37,7 @@ pub async fn setup_config_directory(app: tauri::AppHandle) -> Result<(), String>
     let plugins_path = Path::new(&plugins_conf);
     fs::create_dir_all(themes_path).unwrap();
     fs::create_dir_all(plugins_path).unwrap();
-    let dest = super::get_env("workdir".to_string(), app.clone())
-        .await
-        .unwrap()
-        + "/profile.png";
-    let dest_path = Path::new(&dest);
+    let dest = MAIN_FOLDER_PREFIX.get().unwrap().join("profile.png");
     let pic = app
         .path()
         .resolve(
@@ -49,9 +45,18 @@ pub async fn setup_config_directory(app: tauri::AppHandle) -> Result<(), String>
             tauri::path::BaseDirectory::Resource,
         )
         .unwrap();
-    let value = fs::copy(pic, dest_path).unwrap();
-    println!("{}", value);
+    let _ = fs::copy(pic, dest).unwrap();
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_config_directory() -> String {
+    MAIN_FOLDER_PREFIX
+        .get()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string()
 }
 
 #[tauri::command]
