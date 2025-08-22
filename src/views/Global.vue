@@ -20,6 +20,14 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
     <SettingsField :placeholder="workdir" />
     <SettingsButton @click="async () => { workdir = await changeWorkdir(); }" :name="$t('settingsButtons.change')" />
   </SettingsComposition>
+  <SettingsComposition>
+    <p>Изменить шрифт приложения</p>
+    <SettingsSelector />
+  </SettingsComposition>
+  <SettingsComposition>
+    <p>Добавить свой шрифт</p>
+    <SettingsButton name="добавить шрифт" />
+  </SettingsComposition>
   <SettingsSeparator />
   <SettingsHeader :value="$t('settingsHeaders.editorSettings')" />
   <SettingsComposition>
