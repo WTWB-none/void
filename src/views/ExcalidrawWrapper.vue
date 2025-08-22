@@ -18,10 +18,10 @@ import { ref, onMounted, watch } from 'vue';
 import { applyReactInVue } from 'veaury';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { restore, serializeAsJSON } from '@excalidraw/excalidraw';
-import { AppState, BinaryFiles } from '@excalidraw/excalidraw/types';
+import type { AppState, BinaryFiles } from '@excalidraw/excalidraw/types';
 import { read_canvas, write_canvas } from '@/lib/logic/utils';
 import { useExplorerStore } from '@/lib/logic/explorerstore';
-import { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
+import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 
 
 let props = defineProps({
