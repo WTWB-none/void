@@ -15,6 +15,11 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <template>
   <h1 class="text-4xl text-center text-accent mt-2">{{ $t('common.general') }}</h1>
+  <SettingsComposition>
+    <div>{{ $t('settingsHeaders.changeLocale') }}</div>
+    <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
+      :current-val="locale.current" :exec-fn="set_locale" />
+  </SettingsComposition>
   <SettingsHeader :value="$t('settingsHeaders.changeWorkdir')" />
   <SettingsComposition>
     <SettingsField :placeholder="workdir" />
@@ -34,11 +39,6 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
     <p>Нумерация строк в редакторе</p>
     <Switch :model-value="ed.enabled"
       @update:model-value="async () => { await changePluginState(ed.plug.plugin_name, ed.enabled); ed.enabled = !ed.enabled }" />
-  </SettingsComposition>
-  <SettingsComposition>
-    <div>{{ $t('settingsHeaders.changeLocale') }}</div>
-    <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
-      :current-val="locale.current" :exec-fn="set_locale" />
   </SettingsComposition>
   <SettingsComposition>
     <div>{{ $t("settings.editorMode") }}</div>
