@@ -88,6 +88,7 @@ h1 {
 }
 
 .settings-container {
+  max-height: 100%;
   overflow-y: scroll;
 }
 </style>

@@ -15,11 +15,6 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <template>
   <h1 class="text-4xl text-center text-accent mt-2">{{ $t('common.general') }}</h1>
-  <SettingsComposition>
-    <div>{{ $t('settingsHeaders.changeLocale') }}</div>
-    <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
-      :current-val="locale.current" :exec-fn="set_locale" />
-  </SettingsComposition>
   <SettingsHeader :value="$t('settingsHeaders.changeWorkdir')" />
   <SettingsComposition>
     <SettingsField :placeholder="workdir" />
@@ -35,10 +30,15 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   </SettingsComposition>
   <SettingsSeparator />
   <SettingsHeader :value="$t('settingsHeaders.editorSettings')" />
-  <SettingsComposition v-for="ed in lineNumbers">
+  <SettingsComposition>
     <p>Нумерация строк в редакторе</p>
-    <Switch :model-value="ed.enabled"
-      @update:model-value="async () => { await changePluginState(ed.plug.plugin_name, ed.enabled); ed.enabled = !ed.enabled }" />
+    <Switch :model-value="lineNumbersState"
+      @update:model-value="async () => { if (!lineNumbers) return; await changePluginState(lineNumbers.plugin_name, lineNumbersState); lineNumbersState = !lineNumbersState }" />
+  </SettingsComposition>
+  <SettingsComposition>
+    <div>{{ $t('settingsHeaders.changeLocale') }}</div>
+    <SettingsSelector :selector-placeholder="$t('settingsSelector.language')" :val-list="listOfLocales"
+      :current-val="locale.current" :exec-fn="set_locale" />
   </SettingsComposition>
   <SettingsComposition>
     <div>{{ $t("settings.editorMode") }}</div>
@@ -66,6 +66,7 @@ import SettingsSelector from "@/components/ui/settings/SettingsSelector.vue";
 import { useLocaleStore } from "@/lib/logic/locales";
 import SettingsSeparator from "@/components/ui/settings/SettingsSeparator.vue";
 import { Switch } from "@/components/ui/switch";
+import { FileUpload } from "@/components/ui/file-upload";
 import { Plugin, changePluginState, get_plugins_list } from "@/lib/logic/extensions";
 let workdir = ref("");
 let listOfLocales = ref(useI18n().availableLocales);
@@ -73,12 +74,14 @@ let store = useI18n();
 let locale = useLocaleStore();
 let listOfPlugins = ref<{ plug: Plugin, enabled: boolean }[]>([]);
 let defaultEditorMode = ref('');
-let lineNumbers = ref<{ plug: Plugin, enabled: boolean }[]>([]);
+let lineNumbers = ref<Plugin>();
+let lineNumbersState = ref<boolean>(false);
 onMounted(async () => {
   workdir.value = await getWorkdir();
   let plugins = await get_plugins_list("installed");
   let plugin = plugins.filter((p) => { if (p.plugin_name == "line-numbers") return p })[0];
-  lineNumbers.value?.push({ plug: plugin, enabled: plugin.is_enabled === 'true' });
+  lineNumbers.value = plugin;
+  lineNumbersState.value = plugin.is_enabled === 'true';
   let a = plugins.filter((p) => { if (p.plugin_type == "official" && p.plugin_name != 'line-numbers') return p });
   a.forEach((p) => {
     listOfPlugins.value.push({ plug: p, enabled: p.is_enabled === 'true' });
