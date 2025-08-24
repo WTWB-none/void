@@ -30,10 +30,12 @@ import { useThemeStore } from './lib/logic/themestore';
 import { set_theme } from './lib/logic/settings';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from './lib/logic/locales';
+import { useFontStore } from './lib/logic/fonststore';
 let show_anim = ref(true);
 let error = ref('');
 let notification = ref('');
 let locale = useI18n();
+let fontStore = useFontStore();
 listen('error', (event) => {
   error.value = event.payload;
   console.log(error.value)
@@ -62,6 +64,7 @@ onMounted(async () => {
   }
 
   locale.locale.value = useLocaleStore().current;
+  fontStore.loadFont();
 
   setTimeout(() => { show_anim.value = false }, 1500);
 

@@ -115,7 +115,10 @@ pub fn run() {
             clone_plugin,
             write_note_changes,
             operate_plugin,
-            get_config_directory
+            get_config_directory,
+            copy_font,
+            get_all_user_fonts,
+            get_app_config_dir
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

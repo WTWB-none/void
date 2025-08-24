@@ -22,11 +22,11 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   </SettingsComposition>
   <SettingsComposition>
     <p>Изменить шрифт приложения</p>
-    <SettingsSelector />
+    <SettingsSelector :current-val="fontStore.current" :val-list="fontList" :exec-fn="changeFont" />
   </SettingsComposition>
   <SettingsComposition>
     <p>Добавить свой шрифт</p>
-    <SettingsButton name="добавить шрифт" />
+    <SettingsButton name="добавить шрифт" :onclick="async () => { await addCustomFont() }" />
   </SettingsComposition>
   <SettingsSeparator />
   <SettingsHeader :value="$t('settingsHeaders.editorSettings')" />
@@ -55,7 +55,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 </template>
 
 <script setup lang="ts">
-import { changeWorkdir, getWorkdir } from "@/lib/logic/settings";
+import { changeWorkdir, getWorkdir, addCustomFont, get_user_fonts } from "@/lib/logic/settings";
 import { onMounted, ref } from "vue";
 import SettingsButton from "@/components/ui/settings/SettingsButton.vue";
 import SettingsHeader from "@/components/ui/settings/SettingsHeader.vue";
@@ -66,8 +66,8 @@ import SettingsSelector from "@/components/ui/settings/SettingsSelector.vue";
 import { useLocaleStore } from "@/lib/logic/locales";
 import SettingsSeparator from "@/components/ui/settings/SettingsSeparator.vue";
 import { Switch } from "@/components/ui/switch";
-import { FileUpload } from "@/components/ui/file-upload";
 import { Plugin, changePluginState, get_plugins_list } from "@/lib/logic/extensions";
+import { useFontStore } from "@/lib/logic/fonststore";
 let workdir = ref("");
 let listOfLocales = ref(useI18n().availableLocales);
 let store = useI18n();
@@ -76,6 +76,8 @@ let listOfPlugins = ref<{ plug: Plugin, enabled: boolean }[]>([]);
 let defaultEditorMode = ref('');
 let lineNumbers = ref<Plugin>();
 let lineNumbersState = ref<boolean>(false);
+let fontList = ref<string[]>([]);
+let fontStore = useFontStore();
 onMounted(async () => {
   workdir.value = await getWorkdir();
   let plugins = await get_plugins_list("installed");
@@ -94,6 +96,9 @@ onMounted(async () => {
     localStorage.setItem('mindbreaker:editorDefaults', 'write');
     defaultEditorMode.value = 'write';
   }
+  fontList.value = await get_user_fonts();
+  fontList.value.push('Spectral');
+  fontList.value.reverse();
 });
 function set_locale(val: string) {
   locale.changeLocale(val);
@@ -103,5 +108,10 @@ function set_locale(val: string) {
 function setEditorDefaultState(val: string) {
   localStorage.setItem('mindbreaker:editorDefaults', val);
   defaultEditorMode.value = val;
+}
+
+function changeFont(val: string) {
+  fontStore.changeFont(val);
+  fontStore.loadFont();
 }
 </script>

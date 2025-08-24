@@ -142,3 +142,11 @@ export async function delete_theme(name: String) {
   await invoke("delete_theme", { themeName: name });
 }
 
+export async function addCustomFont() {
+  let font = await open({ multiple: false, filters: [{ name: 'Font', extensions: ['ttf', 'otf'] }] });
+  await invoke('copy_font', { path: font });
+}
+
+export async function get_user_fonts(): Promise<string[]> {
+  return await invoke('get_all_user_fonts');
+}
