@@ -21,7 +21,6 @@ export const useFontStore = defineStore('font', {
   state: () => ({ current: localStorage.getItem('mindbreaker:font') || 'Spectral' }),
   actions: {
     async loadFont() {
-      console.warn('penis');
       if (this.current != 'Spectral') {
         let font_path = await invoke('get_app_config_dir') + '/fonts/' + this.current
         console.log(font_path);

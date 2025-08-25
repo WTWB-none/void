@@ -21,17 +21,17 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
     <SettingsButton @click="async () => { workdir = await changeWorkdir(); }" :name="$t('settingsButtons.change')" />
   </SettingsComposition>
   <SettingsComposition>
-    <p>Изменить шрифт приложения</p>
+    <p>{{ $t('settings.font') }}</p>
     <SettingsSelector :current-val="fontStore.current" :val-list="fontList" :exec-fn="changeFont" />
   </SettingsComposition>
   <SettingsComposition>
-    <p>Добавить свой шрифт</p>
-    <SettingsButton name="добавить шрифт" :onclick="async () => { await addCustomFont() }" />
+    <p>{{ $t('settings.addFont') }}</p>
+    <SettingsButton :name="$t('settingsButtons.addFont')" :onclick="async () => { await addCustomFont() }" />
   </SettingsComposition>
   <SettingsSeparator />
   <SettingsHeader :value="$t('settingsHeaders.editorSettings')" />
   <SettingsComposition>
-    <p>Нумерация строк в редакторе</p>
+    <p>{{ $t('settings.lineNumbers') }}</p>
     <Switch :model-value="lineNumbersState"
       @update:model-value="async () => { if (!lineNumbers) return; await changePluginState(lineNumbers.plugin_name, lineNumbersState); lineNumbersState = !lineNumbersState }" />
   </SettingsComposition>
