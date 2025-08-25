@@ -80,7 +80,7 @@ onMounted(() => {
   border-radius: 15.5px;
   background-color: var(--card);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: margin 0.2s ease-in-out, width 0.2s ease-in-out;
+  transition: margin 0.1s ease-in-out, width 0.1s ease-in-out;
 }
 
 .content-view-with-sidebar {
@@ -93,6 +93,6 @@ onMounted(() => {
   border-radius: 15.5px;
   background-color: var(--card);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: margin 0.2s ease-in-out, width 0.2s ease-in-out;
+  transition: margin 0.1s ease-in-out, width 0.1s ease-in-out;
 }
 </style>

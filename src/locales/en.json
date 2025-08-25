@@ -63,7 +63,8 @@
   "settingsButtons": {
     "change": "Change",
     "installPlugins": "Install plugins",
-    "add": "Add"
+    "add": "Add",
+    "addFont": "Add font"
   },
   "unsupportedContent": {
     "filetypeNotSupportedMsg": "This file type is not supported!"
@@ -82,6 +83,9 @@
     "namePrompt": "What should I call you?"
   },
   "settings": {
-    "editorMode": "Open new notes by default in mode"
+    "editorMode": "Open new notes by default in mode",
+    "font": "Change application font",
+    "addFont": "Add your own font",
+    "lineNumbers": "Enable editor line numbers"
   }
 }

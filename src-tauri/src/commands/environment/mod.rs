@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::commands::database::{DB, EntityError, MainConfig};
+use crate::{
+    MAIN_FOLDER_PREFIX,
+    commands::database::{DB, EntityError, MainConfig},
+};
 
 use super::EntityControl;
 
@@ -45,4 +48,14 @@ pub async fn set_env(ename: String, name: String) -> Result<(), String> {
         Ok(_) => Ok(()),
         Err(e) => Err(e.to_string()),
     }
+}
+
+#[tauri::command]
+pub fn get_app_config_dir() -> Result<String, String> {
+    Ok(MAIN_FOLDER_PREFIX
+        .get()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string())
 }

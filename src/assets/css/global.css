@@ -290,7 +290,7 @@
 }
 
 .cm-editor {
-  height: calc(80vh + 3em + 10px) !important;
+  height: calc(80vh + 10px) !important;
 }
 
 .cm-editor.cm-focused {
