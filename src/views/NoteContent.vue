@@ -31,11 +31,6 @@ import EditorProvider from '@/components/editor/provider/EditorProvider.vue';
 import router from '@/router';
 import { get_official_plugin, get_plugins_list } from '@/lib/logic/extensions';
 let cm = ref<InstanceType<typeof CodeMirror>>();
-const customTheme = EditorView.theme({
-  '&': {
-    font: "'MyFont', monospace",
-  }
-});
 let props = defineProps({
   url: String
 });
@@ -43,7 +38,7 @@ let editorDefaults = ref<boolean>(localStorage.getItem('mindbreaker:editorDefaul
 let selection = useSelectionStore();
 let content = ref<string>('');
 let filename = ref<string>('');
-const extensions = shallowRef([EditorView.lineWrapping, customTheme])
+const extensions = shallowRef([EditorView.lineWrapping])
 function enableSelection() {
   selection.toggleTrue();
 }

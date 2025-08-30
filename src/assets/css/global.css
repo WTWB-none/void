@@ -293,6 +293,11 @@
   height: calc(80vh + 10px) !important;
 }
 
+.cm-line {
+  max-width: 135ch;
+  margin: 0 auto;
+}
+
 
 .cm-editor.cm-focused {
   outline: none !important;
