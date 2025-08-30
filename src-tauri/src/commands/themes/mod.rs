@@ -210,7 +210,7 @@ pub async fn delete_theme(theme_name: String, app: tauri::AppHandle) -> Result<(
         .get()
         .unwrap()
         .join("themes")
-        .join("theme_name");
+        .join(&theme_name);
     std::fs::remove_dir_all(theme_dir).map_err(|e| e.to_string())?;
     db.update(
         theme_name,

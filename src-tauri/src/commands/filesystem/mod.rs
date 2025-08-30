@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{fs, path::Path, str::FromStr};
 
 use tauri::Manager;
 use tauri_plugin_fs::FsExt;
