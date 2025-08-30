@@ -295,6 +295,7 @@
 
 .cm-line {
   max-width: 135ch;
+  width: calc(80vw - 6em);
   margin: 0 auto;
 }
 
