@@ -291,10 +291,11 @@
 
 .cm-editor {
   height: calc(80vh + 10px) !important;
+  font-size: 16px !important;
 }
 
 .cm-line {
-  max-width: 135ch;
+  max-width: 130ch;
   width: calc(80vw - 6em);
   margin: 0 auto;
 }
