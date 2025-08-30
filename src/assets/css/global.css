@@ -293,6 +293,7 @@
   height: calc(80vh + 10px) !important;
 }
 
+
 .cm-editor.cm-focused {
   outline: none !important;
   border: none !important;
