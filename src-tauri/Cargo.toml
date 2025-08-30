@@ -29,7 +29,7 @@ base64 = "0.22.1"
 surrealdb = { version = "2.3.7", features = ["kv-rocksdb"] }
 thiserror = "2.0.16"
 once_cell = "1.21.3"
-rust-fetch = "0.1.0"
+reqwest = "0.12.23"
 libc = "0.2.175"
 tauri-plugin-fs = {version = "2.4.2", features = ["watch"] }
 jwalk = "0.8.1"

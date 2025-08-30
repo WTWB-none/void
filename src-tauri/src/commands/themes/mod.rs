@@ -16,7 +16,6 @@ use crate::MAIN_FOLDER_PREFIX;
  * limitations under the License.
  */
 use super::{DB, EntityControl, EntityError, ThemeRepo, ThemeRepoField, add_repo};
-use rust_fetch::reqwest;
 use serde::Deserialize;
 use std::{fs, vec};
 use tauri::Emitter;
