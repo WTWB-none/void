@@ -31,6 +31,11 @@ type AudioResponse = {
   title: string
 }
 
+export type Entry = {
+  name: string,
+  entry_type: string
+}
+
 export async function get_file_content(
   path: string,
 ): Promise<string> {
@@ -64,8 +69,8 @@ export function checkShowable(): boolean {
   }
 }
 
-export async function get_folder_content(dirname: string): Promise<String[]> {
-  return await invoke("get_directory_content", { dirname: dirname });
+export async function get_folder_content(dirname: string): Promise<Entry[]> {
+  return await invoke<Entry[]>("get_directory_content", { dirname: dirname });
 }
 
 export async function create_file(name: string, dirname: string) {
