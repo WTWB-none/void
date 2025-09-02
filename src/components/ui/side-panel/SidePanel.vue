@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import Sidebar from "../sidebar/Sidebar.vue";
 import SidebarHeader from "../sidebar/SidebarHeader.vue";
 import SidebarFooter from "../sidebar/SidebarFooter.vue";
 import SidebarMenuButton from "../sidebar/SidebarMenuButton.vue";
-import { File, Folder, Keyboard, Settings, Spline } from "lucide-vue-next";
+import { Folder, Settings } from "lucide-vue-next";
 import SidebarMenuItem from "../sidebar/SidebarMenuItem.vue";
 import SidebarMenu from "../sidebar/SidebarMenu.vue";
 import SidebarGroupContent from "../sidebar/SidebarGroupContent.vue";
@@ -26,20 +26,21 @@ import ExplorerMenu from "./side-panel-items/ExplorerMenu.vue";
 import { RecycleScroller } from 'vue-virtual-scroller';
 import { useSidebar } from "../sidebar";
 import { watch } from "vue";
-import { onKeyDown } from "@vueuse/core";
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { useSidebarStore } from "@/lib/logic/sidebarstore";
 import { nanoid } from 'nanoid';
 import { Input } from '@/components/ui/input';
 import { watchImmediate as watchDir } from "@tauri-apps/plugin-fs";
+import { Entry } from '@/lib/logic/utils';
 const plugins = pluginRegistry;
-const loadedPlugins = plugins.reduce((acc, name) => {
+const loadedPlugins = plugins.reduce((acc: any, name) => {
   acc[name] = defineAsyncComponent(() => import(`@/components/ui/side-panel/side-panel-items/${name}.vue`));
   return acc;
 }, {});
 
-let entries = ref([]);
-let page = ref(0);
+let entries = ref<{
+  id: any, name: string, type: string
+}[]>([]);
 let fcreate = ref(false);
 let dcreate = ref(false);
 let expanded = ref(false);
@@ -58,7 +59,7 @@ watch(state, (v) => { if (v === 'collapsed') expanded.value = false; });
 
 onMounted(async () => {
   let watchdir = await get_env('workdir');
-  let a = await watchDir(watchdir, async () => {
+  await watchDir(watchdir, async () => {
     await strip_content();
   }, {
     recursive: true
@@ -74,12 +75,12 @@ onMounted(async () => {
 });
 
 
-async function modify_store(dir) {
+async function modify_store(dir: string) {
   dir !== '..' ? explorer_store.add_path(dir) : explorer_store.remove_path();
   await strip_content();
 }
 
-function performCreation(flag) {
+function performCreation(flag: string) {
   switch (flag) {
     case 'file':
       fcreate.value = true;
@@ -94,8 +95,7 @@ function performCreation(flag) {
 }
 
 
-async function summon(flag) {
-  console.log("pis: " + flag);
+async function summon(flag: string) {
   let folder = explorer_store.current;
   if ((fcreate.value || dcreate.value) && name.value != "") {
     switch (flag) {
@@ -117,18 +117,20 @@ async function summon(flag) {
   }
 }
 
-async function remove_dir(name) {
+async function remove_dir(name: string) {
   await delete_folder('/' + name, useExplorerStore().current);
   await strip_content();
 }
 
-async function remove_file(name) {
+async function remove_file(name: string) {
   await delete_file('/' + name, useExplorerStore().current);
   await strip_content();
 }
+
+
 async function strip_content() {
   let explorer_store = useExplorerStore();
-  let rentries = await get_folder_content(explorer_store.current);
+  let rentries: Entry[] = await get_folder_content(explorer_store.current);
   let temp = [];
 
   if (explorer_store.current !== "") {
@@ -136,26 +138,11 @@ async function strip_content() {
   }
 
   rentries.forEach((entrie) => {
-    if (!entrie.startsWith('.') && !entrie.includes('\\')) {
-      let name = entrie.includes('/')
-        ? entrie.split('/').pop()
-        : entrie;
-
-      if (entrie.includes('.') && !entrie.endsWith('/')) {
-        temp.push({ id: nanoid(), name, type: 'file' });
-      } else {
-        temp.push({ id: nanoid(), name, type: 'dir' });
-      }
-    }
-    else if (!entrie.startsWith('.')) {
-      let name = entrie.includes('\\') ? entrie.split('\\').pop() : entrie;
-
-      if (entrie.includes('.') && !entrie.endsWith('\\')) {
-        temp.push({ id: nanoid(), name, type: 'file' });
-      } else {
-        temp.push({ id: nanoid(), name, type: 'dir' });
-      }
-    }
+    temp.push({
+      id: nanoid(),
+      name: entrie.name,
+      type: entrie.entry_type
+    });
   });
 
   entries.value = temp.sort((a, b) => {
@@ -164,20 +151,19 @@ async function strip_content() {
   });
 }
 
-function enter_rename(name) {
+function enter_rename(name: string) {
   rename_mode.value = {
     name: name,
     enabled: true
   };
   window.addEventListener('keydown', (event) => {
-    if (event.target == 'enter') {
+    if (event.key == 'enter') {
       event.preventDefault();
-      console.log(name.value);
     }
   })
 }
 
-function initiate_copy(name) {
+function initiate_copy(name: string) {
   copied.value = explorer_store.current + '/' + name;
 }
 </script>
@@ -204,7 +190,7 @@ function initiate_copy(name) {
                   <SidebarMenuSub v-if="fcreate || dcreate">
                     <SidebarMenuSubItem>
                       <span class="text-sm flex gap-1 items-center">
-                        <Input type="text" v-model="name" placeholder="unnamed" @keydown="(event) => {
+                        <Input type="text" v-model="name" placeholder="unnamed" @keydown="(event: any) => {
                           if (event.key == 'Enter') {
                             summon(create_type);
                           }
@@ -232,13 +218,13 @@ function initiate_copy(name) {
                             @click="async () => { if (!rename_mode.enabled) { await modify_store(item.name) } }">
                             <TooltipRoot>
                               <TooltipProvider>
-                                <Folder size="15" />
+                                <Folder :size="15" />
                                 <TooltipTrigger>
                                   <span v-if="!rename_mode.enabled || !(rename_mode.name == item.name)"
                                     class="truncate block max-w-[10rem]">{{ item.name
                                     }}</span>
                                   <span v-else>
-                                    <Input class="h-5" v-model="name" type="text" @keydown="async (event) => {
+                                    <Input class="h-5" v-model="name" type="text" @keydown="async (event: any) => {
                                       if (event.key == 'Escape') {
                                         event.preventDefault();
                                         rename_mode = { name: '', enabled: false };
@@ -281,7 +267,7 @@ function initiate_copy(name) {
                             </TooltipRoot>
                           </span>
                           <span v-else>
-                            <Input class="h-5" v-model="name" type="text" @keydown="async (event) => {
+                            <Input class="h-5" v-model="name" type="text" @keydown="async (event: any) => {
                               if (event.key == 'Escape') {
                                 event.preventDefault();
                                 rename_mode = { name: '', enabled: false };

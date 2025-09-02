@@ -161,7 +161,6 @@ class CalloutWidget extends WidgetType {
         parent: bodyEl,
         extensions: [
           IsNestedEditor.of(true),
-          EditorView.lineWrapping,
           combinedListPlugin,
           calloutExtension,
           quotePlugin,
@@ -232,7 +231,8 @@ class CalloutWidget extends WidgetType {
 
     box.appendChild(headerEl);
     box.appendChild(bodyEl);
-    box.style.overflowY = 'scroll';
+    bodyEl.style.maxWidth = '100%';
+    box.style.overflow = 'hidden';
 
     if (!view.state.facet(IsNestedEditor)) {
       const lines = this.body.split('\n');

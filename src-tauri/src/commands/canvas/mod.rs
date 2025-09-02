@@ -28,8 +28,9 @@ pub async fn write_canvas_data(
     if path.is_empty() {
         let canvas_collection = super::get_directory_content("".to_string(), app.clone()).await;
         let index = canvas_collection
+            .unwrap()
             .iter()
-            .filter(|dir| dir.contains(".canvas"))
+            .filter(|dir| dir.name.contains(".canvas"))
             .collect::<Vec<_>>()
             .len()
             + 1;

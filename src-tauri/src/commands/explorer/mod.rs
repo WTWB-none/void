@@ -1,3 +1,4 @@
+use serde::Serialize;
 /**
  * Copyright 2025 The VOID Authors. All Rights Reserved.
  *
@@ -17,17 +18,54 @@ use tauri::Emitter;
 
 use super::get_env;
 
+#[derive(Serialize)]
+pub struct Entry {
+    pub name: String,
+    pub entry_type: String,
+}
+
+impl Entry {
+    fn new(name: String, is_dir: bool) -> Self {
+        match is_dir {
+            true => Entry {
+                name,
+                entry_type: String::from("dir"),
+            },
+            false => Entry {
+                name,
+                entry_type: String::from("file"),
+            },
+        }
+    }
+}
+
 #[tauri::command]
-pub async fn get_directory_content(dirname: String, app: tauri::AppHandle) -> Vec<String> {
-    let workdir = super::get_env("workdir".to_string(), app.clone())
+pub async fn get_directory_content(
+    dirname: String,
+    app: tauri::AppHandle,
+) -> Result<Vec<Entry>, String> {
+    let mut workdir = super::get_env("workdir".to_string(), app.clone())
         .await
         .unwrap();
-    let paths = std::fs::read_dir(workdir.clone() + "/" + dirname.as_str()).unwrap();
-    let dirs: Vec<String> = paths
-        .map(|e| e.unwrap().path().to_str().unwrap().to_string())
-        .map(|d| d.replace((workdir.clone() + "/").as_str(), ""))
+    workdir.push('/');
+    workdir.push_str(&dirname);
+    workdir.push('/');
+    let paths = std::fs::read_dir(workdir.clone()).unwrap();
+    let dirs: Vec<Entry> = paths
+        .map(|e| {
+            let a = e.unwrap();
+            (
+                a.path().to_str().unwrap().to_string(),
+                a.metadata().unwrap().is_dir(),
+            )
+        })
+        .map(|d| {
+            let (name, is_dir) = d;
+            let name = name.replace(&workdir, "");
+            Entry::new(name, is_dir)
+        })
         .collect();
-    dirs
+    Ok(dirs)
 }
 #[tauri::command]
 pub async fn create_entry(
