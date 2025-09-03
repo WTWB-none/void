@@ -14,6 +14,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   limitations under the License.
 -->
 <template>
+  <input type="text" class="filename text-4xl outline-0" contenteditable="true" v-model="filename" />
   <EditorProvider>
     <CodeMirror ref="cm" :extensions="extensions" v-model="content" :onmousedown="enableSelection"
       :onmouseup="stopSelection" :disabled="editorDefaults" />
@@ -45,27 +46,27 @@ function enableSelection() {
 function stopSelection() {
   selection.toggleFalse();
 }
+watch(filename, async () => {
+  if (!props.url) return;
+  let workdir = await get_env('workdir');
+  await rename(decodeURIComponent(atob(props.url)).replace(workdir, ''), filename.value + '.md');
+  let file = decodeURIComponent(atob(props.url));
+  let beforePath = file.split('/')[file.split('/').length - 1];
+  decide_file_ext(file.replace(workdir + useExplorerStore().current, '').replace(beforePath, filename.value + '.md'), router);
+})
 watch(content, async () => {
-  if (!props.url) { return }
-  let new_filename = content.value.split('\n')[0].replace('# ', '').replace('\n', '');
-  if (filename.value != new_filename && new_filename != '' && new_filename != '#') {
-    let explorer = useExplorerStore();
-    let workdir = await get_env('workdir');
-    let elder_name = filename.value
-    filename.value = new_filename;
-    await rename(decodeURIComponent(atob(props.url)).replace(workdir, ''), filename.value + '.md');
-    await decide_file_ext(decodeURIComponent(atob(props.url)).replace(workdir + explorer.current, '').replace(elder_name + '.md', filename.value + '.md'), router);
-  }
-  else {
-    await write_note(decodeURIComponent(atob(props.url)), content.value.replace('# ' + filename.value.replace('.md', '') + '\n', ''));
-  }
+  if (!props.url) return;
+  await write_note(decodeURIComponent(atob(props.url)), content.value);
 });
 
-onMounted(async () => {
+watch(() => props.url, async () => {
+  await loadNote();
+})
+
+async function loadNote() {
   if (!props.url) { return }
-  filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1];
-  content.value = '# ' + filename.value.replace('.md', '') + '\n';
-  content.value += await get_note(decodeURIComponent(atob(props.url)));
+  filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1].replace('.md', '');
+  content.value = await get_note(decodeURIComponent(atob(props.url)));
   let enabled_extensions = await get_plugins_list('installed');
   let filt = enabled_extensions.filter((v) => { if (v.plugin_type == 'official') { return v } });
   filt = filt.filter((v) => { if (v.is_enabled == 'true') { return v } });
@@ -86,6 +87,10 @@ onMounted(async () => {
     if (cm.value == undefined) return;
     cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
   })
+}
+
+onMounted(async () => {
+  await loadNote();
   document.addEventListener('keypress', (e) => {
     if (e.metaKey && e.key == 'e') {
       editorDefaults.value = !editorDefaults.value;
@@ -93,3 +98,13 @@ onMounted(async () => {
   })
 })
 </script>
+
+<style scoped>
+.filename {
+  display: block;
+  max-width: 130ch;
+  width: calc(80vw - 3em);
+  margin: 0 auto;
+  padding-top: 1em;
+}
+</style>
