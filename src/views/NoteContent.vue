@@ -14,7 +14,6 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   limitations under the License.
 -->
 <template>
-  <input type="text" class="filename text-4xl outline-0" contenteditable="true" v-model="filename" />
   <EditorProvider>
     <CodeMirror ref="cm" :extensions="extensions" v-model="content" :onmousedown="enableSelection"
       :onmouseup="stopSelection" :disabled="editorDefaults" />
@@ -31,6 +30,7 @@ import { useExplorerStore } from '@/lib/logic/explorerstore';
 import EditorProvider from '@/components/editor/provider/EditorProvider.vue';
 import router from '@/router';
 import { get_official_plugin, get_plugins_list } from '@/lib/logic/extensions';
+import { filenameWidgetExt } from '@/components/editor/title/title';
 let cm = ref<InstanceType<typeof CodeMirror>>();
 let props = defineProps({
   url: String
@@ -82,7 +82,11 @@ async function loadNote() {
 
   let loaded = await Promise.all(filt.map((p) => get_official_plugin(p.plugin_name)));
   loaded = loaded.filter((p) => { if (p !== null) { return p } });
-  extensions.value = [...extensions.value, loaded.flat()];
+  extensions.value = [];
+  extensions.value = [EditorView.lineWrapping, filenameWidgetExt({
+    getName: () => filename.value,
+    setName: (n) => { filename.value = n },
+  }), ...loaded];
   requestAnimationFrame(() => {
     if (cm.value == undefined) return;
     cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
