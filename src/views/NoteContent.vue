@@ -15,7 +15,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <template>
   <EditorProvider>
-    <CodeMirror ref="cm" :extensions="extensions" v-model="content" :onmousedown="enableSelection"
+    <CodeMirror ref="cm" :extensions="extensions" v-model="content" :onmousedown="enableSelection" :key="props.url"
       :onmouseup="stopSelection" :disabled="editorDefaults" />
   </EditorProvider>
 </template>
@@ -64,8 +64,9 @@ watch(() => props.url, async () => {
 })
 
 async function loadNote() {
-  if (!props.url) { return }
+  if (!props.url) { return; }
   filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1].replace('.md', '');
+  console.log(filename.value);
   content.value = await get_note(decodeURIComponent(atob(props.url)));
   let enabled_extensions = await get_plugins_list('installed');
   let filt = enabled_extensions.filter((v) => { if (v.plugin_type == 'official') { return v } });
