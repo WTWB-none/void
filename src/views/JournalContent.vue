@@ -122,15 +122,21 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
-  loadPDF();
+onMounted(async () => {
+  await loadPDF();
   window.addEventListener("keydown", handleKeydown);
 });
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleKeydown);
+  unloadStuff(file.value);
 });
+function unloadStuff(blob: string) {
+  URL.revokeObjectURL(blob);
+}
 watch(() => props.url, async () => {
-  loadPDF();
+  let prev = file.value;
+  await loadPDF();
+  unloadStuff(prev);
 });
 
 const pdfStyle = {
