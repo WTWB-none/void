@@ -107,11 +107,20 @@ pub async fn remove(
 
 #[tauri::command]
 pub async fn rename(path: String, new_name: String, app: tauri::AppHandle) -> Result<(), String> {
+    use rustix::fs::CWD;
+    use rustix::fs::{RenameFlags, renameat_with};
     let workdir = get_env("workdir".to_string(), app.clone()).await.unwrap();
-    let path = workdir + path.as_str();
-    let new_path = path.replace(path.split("/").last().unwrap(), &new_name);
-    let _ = std::fs::rename(&path, new_path);
-    Ok(())
+    let path = std::path::PathBuf::from(workdir + path.as_str());
+    let new_path = path.parent().unwrap().join(new_name);
+    let result = renameat_with(CWD, path, CWD, new_path, RenameFlags::NOREPLACE);
+    match result {
+        Ok(()) => Ok(()),
+        Err(e) => {
+            let response = e.to_string();
+            app.emit("error", &response).unwrap();
+            Err(response)
+        }
+    }
 }
 
 #[tauri::command]

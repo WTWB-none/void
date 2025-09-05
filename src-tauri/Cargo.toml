@@ -42,3 +42,4 @@ futures = "0.3.31"
 warp = "0.3.7"
 git2 = "0.20.2"
 tauri-plugin-clipboard-manager = "2.3.0"
+rustix = {version = "1.0.8", features = ["fs"] }

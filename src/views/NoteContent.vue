@@ -65,9 +65,18 @@ watch(() => props.url, async () => {
 
 async function loadNote() {
   if (!props.url) { return; }
+  editorDefaults.value = localStorage.getItem('mindbreaker:editorDefaults') == 'read';
   filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1].replace('.md', '');
   console.log(filename.value);
   content.value = await get_note(decodeURIComponent(atob(props.url)));
+  requestAnimationFrame(() => {
+    if (cm.value == undefined) return;
+    cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
+  })
+}
+
+onMounted(async () => {
+  await loadNote();
   let enabled_extensions = await get_plugins_list('installed');
   let filt = enabled_extensions.filter((v) => { if (v.plugin_type == 'official') { return v } });
   filt = filt.filter((v) => { if (v.is_enabled == 'true') { return v } });
@@ -88,14 +97,6 @@ async function loadNote() {
     getName: () => filename.value,
     setName: (n) => { filename.value = n },
   }), ...loaded];
-  requestAnimationFrame(() => {
-    if (cm.value == undefined) return;
-    cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
-  })
-}
-
-onMounted(async () => {
-  await loadNote();
   document.addEventListener('keypress', (e) => {
     if (e.metaKey && e.key == 'e') {
       editorDefaults.value = !editorDefaults.value;
