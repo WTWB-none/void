@@ -72,14 +72,8 @@ pub async fn allow_scope(app: tauri::AppHandle) {
 
 #[tauri::command]
 pub fn copy_font(path: String) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    let filename = path.split('/').next_back();
-    #[cfg(target_os = "linux")]
-    let filename = path.split("\\").last();
-    #[cfg(target_os = "windows")]
-    let filename = path.split('/').last();
-
     let user_path = std::path::PathBuf::from_str(&path).unwrap();
+    let filename = user_path.file_name().to_owned();
     let fonts_folder = MAIN_FOLDER_PREFIX
         .get()
         .unwrap()
