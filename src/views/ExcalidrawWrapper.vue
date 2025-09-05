@@ -27,6 +27,7 @@ import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 let props = defineProps({
   url: String
 });
+let firstTimeOpened = ref<boolean>(true);
 interface ExcalidrawData {
   elements: ExcalidrawElement[];
   appState: Partial<AppState>;
@@ -87,10 +88,15 @@ async function createExcalidrawInstance() {
 
 onMounted(async () => {
   await createExcalidrawInstance();
+  requestAnimationFrame(() => {
+    firstTimeOpened.value = false;
+  })
 });
 
 watch(() => props.url, async () => {
-  createExcalidrawInstance();
+  if (!firstTimeOpened.value) {
+    createExcalidrawInstance();
+  }
 })
 
 
@@ -100,7 +106,6 @@ const handleChange = (elements: ExcalidrawElement[], appState: AppState, files?:
 };
 
 const saveDrawing = async () => {
-  if (!filePath.value) return;
   let data = serializeAsJSON(drawingData.value.elements, drawingData.value.appState, drawingData.value.files ?? {}, "local");
   if (file_path.value == '' && !waiting.value) {
     waiting.value = true;
@@ -110,7 +115,7 @@ const saveDrawing = async () => {
     waiting.value = true;
     await write_canvas(data, file_path.value);
   }
-  waiting.value = false;
+  requestAnimationFrame(() => { waiting.value = false; })
 
 };
 </script>
