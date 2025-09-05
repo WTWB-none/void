@@ -39,6 +39,7 @@ let editorDefaults = ref<boolean>(localStorage.getItem('mindbreaker:editorDefaul
 let selection = useSelectionStore();
 let content = ref<string>('');
 let filename = ref<string>('');
+let first_time_opened = ref<boolean>(true);
 const extensions = shallowRef([EditorView.lineWrapping])
 function enableSelection() {
   selection.toggleTrue();
@@ -59,8 +60,12 @@ watch(content, async () => {
   await write_note(decodeURIComponent(atob(props.url)), content.value);
 });
 
-watch(() => props.url, async () => {
-  await loadNote();
+watch(props, async () => {
+  if (!first_time_opened.value) {
+    console.log('renamed');
+    filename.value = '';
+    await loadNote();
+  }
 })
 
 async function loadNote() {
@@ -76,13 +81,14 @@ async function loadNote() {
 }
 
 onMounted(async () => {
+  console.error('mounted')
   await loadNote();
   let enabled_extensions = await get_plugins_list('installed');
   let filt = enabled_extensions.filter((v) => { if (v.plugin_type == 'official') { return v } });
   filt = filt.filter((v) => { if (v.is_enabled == 'true') { return v } });
   const orderMap: Record<string, number> = { callout: 0, quote: 1 };
   const order = (name: string) => (name in orderMap ? orderMap[name] : 2);
-
+  first_time_opened.value = false;
   filt.sort((a, b) => {
     const oa = order(a.plugin_name);
     const ob = order(b.plugin_name);
