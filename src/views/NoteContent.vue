@@ -15,7 +15,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 -->
 <template>
   <EditorProvider>
-    <CodeMirror ref="cm" :extensions="extensions" v-model="content" :onmousedown="enableSelection" :key="props.url"
+    <CodeMirror ref="cm" :extensions="extensions" v-model="content" :onmousedown="enableSelection"
       :onmouseup="stopSelection" :disabled="editorDefaults" />
   </EditorProvider>
 </template>
