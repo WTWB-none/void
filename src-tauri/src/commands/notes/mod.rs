@@ -1,3 +1,5 @@
+use crate::commands::get_env;
+
 /**
  * Copyright 2025 The VOID Authors. All Rights Reserved.
  *
@@ -14,15 +16,17 @@
  * limitations under the License.
  */
 #[tauri::command]
-pub fn get_note_content(path: String) -> Result<String, String> {
-    let path = std::path::Path::new(&path);
+pub async fn get_note_content(path: String) -> Result<String, String> {
+    let workdir = std::path::PathBuf::from(get_env("workdir".to_string()).await.unwrap());
+    let path = workdir.join(&path);
     let content = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     Ok(content)
 }
 
 #[tauri::command]
-pub fn write_note_changes(path: String, value: String) -> Result<(), String> {
-    let path = std::path::Path::new(&path);
+pub async fn write_note_changes(path: String, value: String) -> Result<(), String> {
+    let workdir = std::path::PathBuf::from(get_env("workdir".to_string()).await.unwrap());
+    let path = workdir.join(&path);
     std::fs::write(path, value).map_err(|e| e.to_string())?;
     Ok(())
 }

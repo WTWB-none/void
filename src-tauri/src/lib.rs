@@ -57,19 +57,10 @@ pub fn run() {
                 if let Err(e) = create_first_database(app.handle().clone()).await {
                     eprintln!("Ошибка при инициализации{}", e);
                 }
-                if get_env("workdir".to_string(), app.handle().clone())
-                    .await
-                    .unwrap()
-                    .as_str()
-                    != ""
-                {
+                if get_env("workdir".to_string()).await.unwrap().as_str() != "" {
                     let scope = app.fs_scope();
-                    let _ = scope.allow_directory(
-                        get_env("workdir".to_string(), app.handle().clone())
-                            .await
-                            .unwrap(),
-                        true,
-                    );
+                    let _ =
+                        scope.allow_directory(get_env("workdir".to_string()).await.unwrap(), true);
                 }
             });
             Ok(())

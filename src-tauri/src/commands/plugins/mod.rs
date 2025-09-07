@@ -84,27 +84,25 @@ pub async fn get_list_of_plugins(key: String) -> Result<Vec<PluginList>, String>
             .get_all_members::<PluginList>("plugins_repo")
             .await
             .map_err(|e| e.to_string())?
-            .iter()
+            .into_iter()
             .filter(|e| {
                 e.get_value_by_key("installed".to_string())
                     .unwrap()
                     .as_str()
                     != "false"
             })
-            .cloned()
             .collect::<Vec<_>>(),
         "not_installed" => db
             .get_all_members::<PluginList>("plugins_repo")
             .await
             .map_err(|e| e.to_string())?
-            .iter()
+            .into_iter()
             .filter(|p| {
                 p.get_value_by_key("installed".to_string())
                     .unwrap()
                     .as_str()
                     == "false"
             })
-            .cloned()
             .collect::<Vec<_>>(),
         _ => Vec::<PluginList>::new(),
     };

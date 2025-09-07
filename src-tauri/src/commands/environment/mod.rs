@@ -21,7 +21,7 @@ use crate::{
 use super::EntityControl;
 
 #[tauri::command]
-pub async fn get_env(ename: String, _app: tauri::AppHandle) -> Result<String, String> {
+pub async fn get_env(ename: String) -> Result<String, String> {
     match DB
         .get()
         .unwrap()

@@ -21,12 +21,10 @@ pub async fn write_canvas_data(
     data: String,
     app: tauri::AppHandle,
 ) -> Result<String, String> {
-    let workdir = super::get_env("workdir".to_string(), app.clone())
-        .await
-        .unwrap();
+    let workdir = super::get_env("workdir".to_string()).await.unwrap();
     let mut path = path;
     if path.is_empty() {
-        let canvas_collection = super::get_directory_content("".to_string(), app.clone()).await;
+        let canvas_collection = super::get_directory_content("".to_string()).await;
         let index = canvas_collection
             .unwrap()
             .iter()
