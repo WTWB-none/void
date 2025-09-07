@@ -39,6 +39,7 @@ let editorDefaults = ref<boolean>(localStorage.getItem('mindbreaker:editorDefaul
 let selection = useSelectionStore();
 let content = ref<string>('');
 let filename = ref<string>('');
+let first_time_opened = ref<boolean>(true);
 const extensions = shallowRef([EditorView.lineWrapping])
 function enableSelection() {
   selection.toggleTrue();
@@ -59,20 +60,35 @@ watch(content, async () => {
   await write_note(decodeURIComponent(atob(props.url)), content.value);
 });
 
-watch(() => props.url, async () => {
-  await loadNote();
+watch(props, async () => {
+  if (!first_time_opened.value) {
+    console.log('renamed');
+    filename.value = '';
+    await loadNote();
+  }
 })
 
 async function loadNote() {
-  if (!props.url) { return }
+  if (!props.url) { return; }
+  editorDefaults.value = localStorage.getItem('mindbreaker:editorDefaults') == 'read';
   filename.value = decodeURIComponent(atob(props.url)).split('/')[decodeURIComponent(atob(props.url)).split('/').length - 1].replace('.md', '');
+  console.log(filename.value);
   content.value = await get_note(decodeURIComponent(atob(props.url)));
+  requestAnimationFrame(() => {
+    if (cm.value == undefined) return;
+    cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
+  })
+}
+
+onMounted(async () => {
+  console.error('mounted')
+  await loadNote();
   let enabled_extensions = await get_plugins_list('installed');
   let filt = enabled_extensions.filter((v) => { if (v.plugin_type == 'official') { return v } });
   filt = filt.filter((v) => { if (v.is_enabled == 'true') { return v } });
   const orderMap: Record<string, number> = { callout: 0, quote: 1 };
   const order = (name: string) => (name in orderMap ? orderMap[name] : 2);
-
+  first_time_opened.value = false;
   filt.sort((a, b) => {
     const oa = order(a.plugin_name);
     const ob = order(b.plugin_name);
@@ -87,14 +103,6 @@ async function loadNote() {
     getName: () => filename.value,
     setName: (n) => { filename.value = n },
   }), ...loaded];
-  requestAnimationFrame(() => {
-    if (cm.value == undefined) return;
-    cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
-  })
-}
-
-onMounted(async () => {
-  await loadNote();
   document.addEventListener('keypress', (e) => {
     if (e.metaKey && e.key == 'e') {
       editorDefaults.value = !editorDefaults.value;

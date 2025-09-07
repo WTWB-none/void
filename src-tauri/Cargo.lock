@@ -26,6 +26,7 @@ dependencies = [
  "once_cell",
  "portable-pty",
  "reqwest",
+ "rustix 1.0.8",
  "serde",
  "serde_json",
  "surrealdb",
@@ -5512,15 +5513,15 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "1.0.5"
+version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d97817398dd4bb2e6da002002db259209759911da105da92bec29ccb12cf58bf"
+checksum = "11181fbabf243db407ef8df94a6ce0b2f9a733bd8be4ad02b4eda9602296cac8"
 dependencies = [
  "bitflags 2.9.0",
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -6813,7 +6814,7 @@ dependencies = [
  "fastrand",
  "getrandom 0.3.2",
  "once_cell",
- "rustix 1.0.5",
+ "rustix 1.0.8",
  "windows-sys 0.59.0",
 ]
 
@@ -7743,7 +7744,7 @@ checksum = "673a33c33048a5ade91a6b139580fa174e19fb0d23f396dca9fa15f2e1e49b35"
 dependencies = [
  "cc",
  "downcast-rs",
- "rustix 1.0.5",
+ "rustix 1.0.8",
  "smallvec",
  "wayland-sys",
 ]
@@ -7755,7 +7756,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c66a47e840dc20793f2264eb4b3e4ecb4b75d91c0dd4af04b456128e0bdd449d"
 dependencies = [
  "bitflags 2.9.0",
- "rustix 1.0.5",
+ "rustix 1.0.8",
  "wayland-backend",
  "wayland-scanner",
 ]

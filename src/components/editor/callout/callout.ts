@@ -129,7 +129,7 @@ class CalloutWidget extends WidgetType {
   }
 
   eq(other: CalloutWidget): boolean {
-    return this.tag === other.tag && this.header === other.header;
+    return this.tag === other.tag && this.header === other.header && this.body === other.body;
   }
 
   private findMyRange(): { from: number; to: number } | null {
@@ -169,6 +169,7 @@ class CalloutWidget extends WidgetType {
           NestedEditorView.editable.of(false),
           NestedEditorView.updateListener.of((update: ViewUpdate) => {
             if (!update.docChanged) return;
+            cachedCallouts = [];
             const rng = this.findMyRange();
             if (!rng) return;
 
@@ -401,7 +402,7 @@ export const calloutExtension: Extension = [
     }
 
     if (!update.docChanged) return;
-
+    cachedCallouts = [];
     let needsRebuild = false;
     const before = parseCallouts(update.startState);
 
