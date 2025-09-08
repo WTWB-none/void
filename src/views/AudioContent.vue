@@ -28,7 +28,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 </template>
 
 <script setup lang="ts">
-import { get_audio_content, get_file_content } from '@/lib/logic/utils';
+import { get_audio_content, get_file_content, getFullPath } from '@/lib/logic/utils';
 import { PlayCircle, PauseCircle } from 'lucide-vue-next';
 import { Progress } from '@/components/ui/progress';
 import { onMounted, onUnmounted, ref, nextTick, watch } from 'vue';
@@ -71,7 +71,8 @@ function togglePlay() {
 onMounted(async () => {
   if (!props.url) return;
 
-  const audio_path = decodeURIComponent(atob(props.url));
+  let audio_path = decodeURIComponent(atob(props.url));
+  audio_path = await getFullPath(audio_path);
   sound.value = await get_file_content(audio_path);
   const response = await get_audio_content(audio_path);
   meta_image.value = response.picture_url;
@@ -88,7 +89,8 @@ onMounted(async () => {
 
 watch(() => props.url, async () => {
   if (!props.url) return;
-  const audio_path = decodeURIComponent(atob(props.url));
+  let audio_path = decodeURIComponent(atob(props.url));
+  audio_path = await getFullPath(audio_path);
   sound.value = await get_file_content(audio_path);
   const response = await get_audio_content(audio_path);
   now_playing.value = false;
