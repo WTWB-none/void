@@ -47,8 +47,9 @@ function enableSelection() {
 function stopSelection() {
   selection.toggleFalse();
 }
-watch(filename, async () => {
+watch(() => filename.value, async () => {
   if (!props.url) return;
+  console.log('renamed');
   let workdir = await get_env('workdir');
   console.log(filename.value);
   console.log(decodeURIComponent(atob(props.url)).replace(workdir, ''));
@@ -65,7 +66,6 @@ watch(content, async () => {
 
 watch(props, async () => {
   if (!first_time_opened.value) {
-    console.log('renamed');
     filename.value = '';
     await loadNote();
   }
@@ -78,8 +78,10 @@ async function loadNote() {
   console.log(filename.value);
   content.value = await get_note(decodeURIComponent(atob(props.url)));
   requestAnimationFrame(() => {
-    if (cm.value == undefined) return;
-    cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
+    requestAnimationFrame(() => {
+      if (cm.value == undefined) return;
+      cm.value.view.dispatch({ selection: { anchor: cm.value.view.state.selection.main.anchor }, })
+    })
   })
 }
 
