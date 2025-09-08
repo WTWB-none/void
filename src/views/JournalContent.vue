@@ -55,7 +55,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import VuePdfEmbed, { useVuePdfEmbed } from "vue-pdf-embed";
-import { get_file_content } from "@/lib/logic/utils";
+import { get_file_content, getFullPath } from "@/lib/logic/utils";
 
 const props = defineProps<{ url: string }>();
 
@@ -92,7 +92,8 @@ watch(doc, (val) => {
 async function loadPDF() {
   if (props.url) {
     const file_path = decodeURIComponent(atob(props.url));
-    file.value = await get_file_content(file_path);
+    const path = await getFullPath(file_path);
+    file.value = await get_file_content(path);
   }
 }
 

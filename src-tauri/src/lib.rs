@@ -109,7 +109,8 @@ pub fn run() {
             get_config_directory,
             copy_font,
             get_all_user_fonts,
-            get_app_config_dir
+            get_app_config_dir,
+            get_absolute_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

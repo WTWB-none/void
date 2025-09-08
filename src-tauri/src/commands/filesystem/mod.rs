@@ -1,3 +1,4 @@
+use rustix::path::Arg;
 /**
  * Copyright 2025 The VOID Authors. All Rights Reserved.
  *
@@ -168,4 +169,10 @@ pub async fn modify_entry(
         _ => (),
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_absolute_path(subpath: String) -> String {
+    let workdir = std::path::PathBuf::from(get_env("workdir".to_string()).await.unwrap());
+    workdir.join(subpath).as_str().unwrap().to_string()
 }

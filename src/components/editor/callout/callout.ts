@@ -380,7 +380,7 @@ const forceRecalcOnPointerUp = ViewPlugin.fromClass(class {
 
   constructor(private readonly view: EditorView) {
     const doc = view.dom.ownerDocument;
-    doc.addEventListener('mouseup', this.onUp, true); // capture: ловим даже снаружи
+    doc.addEventListener('mouseup', this.onUp, true);
   }
 
   destroy() {

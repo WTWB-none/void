@@ -36,6 +36,10 @@ export type Entry = {
   entry_type: string
 }
 
+export async function getFullPath(subPath: string): Promise<string> {
+  return await invoke('get_absolute_path', { subpath: subPath });
+}
+
 export async function get_file_content(
   path: string,
 ): Promise<string> {
