@@ -43,12 +43,12 @@ class FilenameWidget extends WidgetType {
     input.autocapitalize = 'off';
     input.setAttribute('aria-label', 'Filename');
 
-    input.addEventListener('input', () => this.api.setName(input.value));
     input.addEventListener('keydown', (e) => e.stopPropagation());
     input.addEventListener('keyup', (e) => e.stopPropagation());
     input.addEventListener('keypress', (e) => e.stopPropagation());
     input.addEventListener('mousedown', (e) => e.stopPropagation());
     input.addEventListener('click', (e) => e.stopPropagation());
+    input.addEventListener('focusout', () => this.api.setName(input.value))
 
     wrap.appendChild(input);
     return wrap;
