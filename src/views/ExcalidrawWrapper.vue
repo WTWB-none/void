@@ -19,7 +19,7 @@ import { applyReactInVue } from 'veaury';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { restore, serializeAsJSON } from '@excalidraw/excalidraw';
 import type { AppState, BinaryFiles } from '@excalidraw/excalidraw/types';
-import { read_canvas, write_canvas } from '@/lib/logic/utils';
+import { get_env, getFullPath, read_canvas, write_canvas } from '@/lib/logic/utils';
 import { useExplorerStore } from '@/lib/logic/explorerstore';
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 
@@ -62,10 +62,12 @@ const initializeApp = async () => {
 async function createExcalidrawInstance() {
   if (props.url != undefined) {
     let path = decodeURIComponent(atob(props.url));
-    let content = await read_canvas(decodeURIComponent(atob(props.url)));
+    path = await getFullPath(path);
+    let workdir = await get_env('workdir');
+    let content = await read_canvas(path);
     if (content == '') {
       await initializeApp();
-      file_path.value = useExplorerStore().current + '/' + path.split('/')[path.split('/').length - 1];
+      file_path.value = path.replace(workdir, '');
       return;
     }
     let obj = JSON.parse(content);
@@ -81,7 +83,7 @@ async function createExcalidrawInstance() {
       },
       files: restored.files
     };
-    file_path.value = useExplorerStore().current + '/' + path.split('/')[path.split('/').length - 1];
+    file_path.value = path.replace(workdir, '');
   }
   await initializeApp();
 }
@@ -106,6 +108,7 @@ const handleChange = (elements: ExcalidrawElement[], appState: AppState, files?:
 };
 
 const saveDrawing = async () => {
+  if (!filePath.value) return;
   let data = serializeAsJSON(drawingData.value.elements, drawingData.value.appState, drawingData.value.files ?? {}, "local");
   if (file_path.value == '' && !waiting.value) {
     waiting.value = true;
