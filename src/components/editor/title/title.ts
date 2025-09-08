@@ -55,7 +55,7 @@ class FilenameWidget extends WidgetType {
       else if (e.key == 'Escape') {
         input.value = this.api.getName();
       }
-    })
+    });
 
     wrap.appendChild(input);
     return wrap;
