@@ -14,7 +14,7 @@ Copyright 2025 The VOID Authors. All Rights Reserved.
   limitations under the License.
 -->
 <script setup lang="ts">
-import { get_file_content } from '@/lib/logic/utils';
+import { get_file_content, getFullPath } from '@/lib/logic/utils';
 import { onMounted, ref, watch } from 'vue';
 let props = defineProps({
   url: String
@@ -25,12 +25,14 @@ let file = ref('');
 onMounted(async () => {
   if (!props.url) { return }
   let file_path = decodeURIComponent(atob(props.url));
-  file.value = await get_file_content(file_path);
+  let path = await getFullPath(file_path);
+  file.value = await get_file_content(path);
 });
 watch(() => props.url, async () => {
   if (!props.url) { return }
   let file_path = decodeURIComponent(atob(props.url));
-  file.value = await get_file_content(file_path);
+  let path = await getFullPath(file_path);
+  file.value = await get_file_content(path);
 });
 </script>
 <template>
