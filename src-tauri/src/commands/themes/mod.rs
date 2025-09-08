@@ -46,39 +46,33 @@ pub async fn get_theme(name: String, _app: tauri::AppHandle) -> Result<String, S
 }
 
 #[tauri::command]
-pub async fn get_list_of_themes(
-    key: String,
-    _app: tauri::AppHandle,
-) -> Result<Vec<ThemeRepo>, String> {
+pub async fn get_list_of_themes(key: String) -> Result<Vec<ThemeRepo>, String> {
     let db = DB.get().unwrap();
     let entities = db
         .get_all_members::<ThemeRepo>("themes_repo")
         .await
         .map_err(|e| e.to_string())?;
-    let fentities = match key.as_str() {
-        "installed" => entities
-            .iter()
-            .filter(|t| {
+    match key.as_str() {
+        "installed" => Ok(entities
+            .into_iter()
+            .filter(move |t| {
                 t.get_value_by_key("installed".to_string())
                     .unwrap()
                     .as_str()
                     == "true"
             })
-            .cloned()
-            .collect::<Vec<ThemeRepo>>(),
-        "not_installed" => entities
-            .iter()
+            .collect::<Vec<ThemeRepo>>()),
+        "not_installed" => Ok(entities
+            .into_iter()
             .filter(|t| {
                 t.get_value_by_key("installed".to_string())
                     .unwrap()
                     .as_str()
                     == "false"
             })
-            .cloned()
-            .collect::<Vec<ThemeRepo>>(),
-        _ => Vec::<ThemeRepo>::new(),
-    };
-    Ok(fentities)
+            .collect::<Vec<ThemeRepo>>()),
+        _ => Ok(Vec::<ThemeRepo>::new()),
+    }
 }
 
 #[tauri::command]

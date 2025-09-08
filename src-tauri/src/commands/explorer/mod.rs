@@ -36,13 +36,8 @@ impl Entry {
 }
 
 #[tauri::command]
-pub async fn get_directory_content(
-    dirname: String,
-    app: tauri::AppHandle,
-) -> Result<Vec<Entry>, String> {
-    let mut workdir = super::get_env("workdir".to_string(), app.clone())
-        .await
-        .unwrap();
+pub async fn get_directory_content(dirname: String) -> Result<Vec<Entry>, String> {
+    let mut workdir = super::get_env("workdir".to_string()).await.unwrap();
     workdir.push('/');
     workdir.push_str(&dirname);
     workdir.push('/');

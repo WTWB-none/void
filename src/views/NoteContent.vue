@@ -50,10 +50,13 @@ function stopSelection() {
 watch(filename, async () => {
   if (!props.url) return;
   let workdir = await get_env('workdir');
+  console.log(filename.value);
+  console.log(decodeURIComponent(atob(props.url)).replace(workdir, ''));
   await rename(decodeURIComponent(atob(props.url)).replace(workdir, ''), filename.value + '.md');
   let file = decodeURIComponent(atob(props.url));
   let beforePath = file.split('/')[file.split('/').length - 1];
-  decide_file_ext(file.replace(workdir + useExplorerStore().current, '').replace(beforePath, filename.value + '.md'), router);
+
+  decide_file_ext(file.replace(useExplorerStore().current, '').replace(beforePath, filename.value + '.md'), router);
 })
 watch(content, async () => {
   if (!props.url) return;

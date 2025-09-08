@@ -1,3 +1,4 @@
+use rustix::path::Arg;
 /**
  * Copyright 2025 The VOID Authors. All Rights Reserved.
  *
@@ -32,7 +33,7 @@ pub fn get_file(ipath: String) -> Vec<u8> {
 #[tauri::command]
 pub async fn setup_config_directory(app: tauri::AppHandle) -> Result<(), String> {
     let workdir_conf = MAIN_FOLDER_PREFIX.get().unwrap();
-    let plugins_conf = workdir_conf.clone().join("plugins");
+    let plugins_conf = workdir_conf.join("plugins");
     let themes_conf = workdir_conf.join("themes");
     let fonts_conf = workdir_conf.join("fonts");
     let themes_path = Path::new(&themes_conf);
@@ -66,7 +67,7 @@ pub async fn get_config_directory() -> String {
 #[tauri::command]
 pub async fn allow_scope(app: tauri::AppHandle) {
     let scope = app.fs_scope();
-    let workdir = get_env("workdir".to_string(), app.clone()).await.unwrap();
+    let workdir = get_env("workdir".to_string()).await.unwrap();
     let _ = scope.allow_directory(workdir, true);
 }
 
@@ -94,13 +95,8 @@ pub fn get_all_user_fonts() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub async fn create_entry(
-    name: String,
-    path: String,
-    flag: String,
-    app: tauri::AppHandle,
-) -> Result<(), String> {
-    let workdir = super::get_env("workdir".to_string(), app.clone()).await?;
+pub async fn create_entry(name: String, path: String, flag: String) -> Result<(), String> {
+    let workdir = super::get_env("workdir".to_string()).await?;
     let path = workdir + path.as_str() + name.as_str();
     println!("{}", flag);
     println!("{}", path);
@@ -114,13 +110,8 @@ pub async fn create_entry(
 }
 
 #[tauri::command]
-pub async fn remove(
-    name: String,
-    path: String,
-    flag: String,
-    app: tauri::AppHandle,
-) -> Result<(), String> {
-    let workdir = super::get_env("workdir".to_string(), app.clone()).await?;
+pub async fn remove(name: String, path: String, flag: String) -> Result<(), String> {
+    let workdir = super::get_env("workdir".to_string()).await?;
     let path = workdir + path.as_str() + name.as_str();
     let path = std::path::Path::new(&path);
     match flag.as_str() {
@@ -135,9 +126,10 @@ pub async fn remove(
 pub async fn rename(path: String, new_name: String, app: tauri::AppHandle) -> Result<(), String> {
     use rustix::fs::CWD;
     use rustix::fs::{RenameFlags, renameat_with};
-    let workdir = get_env("workdir".to_string(), app.clone()).await.unwrap();
-    let path = std::path::PathBuf::from(workdir + path.as_str());
+    let workdir = get_env("workdir".to_string()).await.unwrap();
+    let path = std::path::PathBuf::from(workdir).join(&path);
     let new_path = path.parent().unwrap().join(new_name);
+    println!("{:#?}:{:#?}", path, new_path);
     let result = renameat_with(CWD, path, CWD, new_path, RenameFlags::NOREPLACE);
     match result {
         Ok(()) => Ok(()),
@@ -156,9 +148,11 @@ pub async fn modify_entry(
     flag: String,
     app: tauri::AppHandle,
 ) -> Result<(), String> {
-    let workdir = get_env("workdir".to_string(), app.clone()).await.unwrap();
-    let before_path = workdir.clone() + before_path.as_str();
-    let after_path = workdir + after_path.as_str() + "/" + before_path.split("/").last().unwrap();
+    let workdir = std::path::PathBuf::from(get_env("workdir".to_string()).await.unwrap());
+    let before_path = workdir.join(before_path.as_str());
+    let after_path = workdir
+        .join(after_path.as_str())
+        .join(before_path.file_name().unwrap());
     match flag.as_str() {
         "copy" => {
             std::fs::copy(before_path, after_path).map_err(|e| {
@@ -175,4 +169,10 @@ pub async fn modify_entry(
         _ => (),
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_absolute_path(subpath: String) -> String {
+    let workdir = std::path::PathBuf::from(get_env("workdir".to_string()).await.unwrap());
+    workdir.join(subpath).as_str().unwrap().to_string()
 }

@@ -36,6 +36,10 @@ export type Entry = {
   entry_type: string
 }
 
+export async function getFullPath(subPath: string): Promise<string> {
+  return await invoke('get_absolute_path', { subpath: subPath });
+}
+
 export async function get_file_content(
   path: string,
 ): Promise<string> {
@@ -118,13 +122,12 @@ export async function decide_file_ext(name: string, router: Router) {
   ext_map.set("canvas", "canvas");
   let extension = name.split('.')[name.split('.').length - 1];
   if (ext_map.get(extension) != undefined) {
-    let workdir = await invoke('get_env', { ename: 'workdir' });
     let explorer = useExplorerStore();
     name = name.replaceAll(' ', '\ ');
-    let file_path = workdir + explorer.current + '/' + name;
+    let file_path = explorer.current + name;
     let coded_path = btoa(encodeURIComponent(file_path));
-    console.log(coded_path);
     router.push('/' + ext_map.get(extension) + '/' + coded_path);
+    console.log(file_path);
   }
   else {
     router.push('/unsupported');
