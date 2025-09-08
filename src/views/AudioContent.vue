@@ -79,7 +79,7 @@ onMounted(async () => {
   meta_artist.value = response.author;
   meta_title.value = response.title;
 
-  await nextTick(); // Ждём монтирования <audio> (waiting for installation)
+  await nextTick();
 
   if (Player.value) {
     Player.value.addEventListener('timeupdate', onTimeUpdate);

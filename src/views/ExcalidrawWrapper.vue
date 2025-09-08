@@ -20,7 +20,6 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { restore, serializeAsJSON } from '@excalidraw/excalidraw';
 import type { AppState, BinaryFiles } from '@excalidraw/excalidraw/types';
 import { get_env, getFullPath, read_canvas, write_canvas } from '@/lib/logic/utils';
-import { useExplorerStore } from '@/lib/logic/explorerstore';
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 
 
