@@ -1,0 +1,24 @@
+---
+mixed-port: 7893
+allow-lan: true
+mode: global
+log-level: info
+proxies:
+- name: "hysteria"
+  type: hysteria2
+  server: panel.void-project.ru
+  port: 443
+  auth-str: GhostOfMyDream
+  obfs: GhostOfMyDream
+  protocol: udp 
+  up: "30 Mbps" 
+  down: "200 Mbps"
+  skip-cert-verify: true
+proxy-groups:
+- name: Proxy
+  type: select
+  proxies:
+  - HY2-Void
+  - DIRECT
+rules:
+- MATCH,Proxy

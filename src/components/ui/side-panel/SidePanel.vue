@@ -100,14 +100,14 @@ async function summon(flag: string) {
   if ((fcreate.value || dcreate.value) && name.value != "") {
     switch (flag) {
       case 'file':
-        await create_file('/' + name.value, folder);
+        await create_file(name.value, folder);
         create_type.value = "";
         name.value = "";
         fcreate.value = false;
         await strip_content();
         break;
       case 'folder':
-        await create_folder('/' + name.value, folder);
+        await create_folder(name.value, folder);
         create_type.value = "";
         name.value = "";
         dcreate.value = false;

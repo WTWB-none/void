@@ -1,4 +1,3 @@
-use rustix::path::Arg;
 /**
  * Copyright 2025 The VOID Authors. All Rights Reserved.
  *
@@ -95,16 +94,26 @@ pub fn get_all_user_fonts() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub async fn create_entry(name: String, path: String, flag: String) -> Result<(), String> {
-    let workdir = super::get_env("workdir".to_string()).await?;
-    let path = workdir + path.as_str() + name.as_str();
+pub async fn create_entry(
+    name: String,
+    path: String,
+    flag: String,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    let workdir = std::path::PathBuf::from(super::get_env("workdir".to_string()).await?);
+    let path = workdir.join(path).join(name);
     println!("{}", flag);
-    println!("{}", path);
+    println!("{:#?}", path);
     let path = std::path::Path::new(&path);
     match flag.as_str() {
         "folder" => std::fs::create_dir(path).map_err(|e| e.to_string())?,
-        "file" => std::fs::write(path, "").map_err(|e| e.to_string())?,
-        _ => return Err("нет такого флага".to_string()),
+        "file" => {
+            std::fs::File::create_new(path).map_err(|e| {
+                app.emit("error", e.to_string()).unwrap();
+                e.to_string()
+            })?;
+        }
+        _ => return Err("different flag detected".to_string()),
     }
     Ok(())
 }
@@ -124,13 +133,18 @@ pub async fn remove(name: String, path: String, flag: String) -> Result<(), Stri
 
 #[tauri::command]
 pub async fn rename(path: String, new_name: String, app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(windows))]
     use rustix::fs::CWD;
+    #[cfg(not(windows))]
     use rustix::fs::{RenameFlags, renameat_with};
     let workdir = get_env("workdir".to_string()).await.unwrap();
     let path = std::path::PathBuf::from(workdir).join(&path);
     let new_path = path.parent().unwrap().join(new_name);
     println!("{:#?}:{:#?}", path, new_path);
+    #[cfg(not(windows))]
     let result = renameat_with(CWD, path, CWD, new_path, RenameFlags::NOREPLACE);
+    #[cfg(target_os = "windows")]
+    let result = std::fs::rename(path, new_path);
     match result {
         Ok(()) => Ok(()),
         Err(e) => {
@@ -174,5 +188,10 @@ pub async fn modify_entry(
 #[tauri::command]
 pub async fn get_absolute_path(subpath: String) -> String {
     let workdir = std::path::PathBuf::from(get_env("workdir".to_string()).await.unwrap());
-    workdir.join(subpath).as_str().unwrap().to_string()
+    workdir
+        .join(subpath)
+        .as_os_str()
+        .to_str()
+        .unwrap()
+        .to_string()
 }
