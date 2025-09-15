@@ -118,12 +118,12 @@ async function summon(flag: string) {
 }
 
 async function remove_dir(name: string) {
-  await delete_folder('/' + name, useExplorerStore().current);
+  await delete_folder(name, useExplorerStore().current);
   await strip_content();
 }
 
 async function remove_file(name: string) {
-  await delete_file('/' + name, useExplorerStore().current);
+  await delete_file(name, useExplorerStore().current);
   await strip_content();
 }
 

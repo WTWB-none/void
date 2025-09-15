@@ -120,8 +120,8 @@ pub async fn create_entry(
 
 #[tauri::command]
 pub async fn remove(name: String, path: String, flag: String) -> Result<(), String> {
-    let workdir = super::get_env("workdir".to_string()).await?;
-    let path = workdir + path.as_str() + name.as_str();
+    let workdir = std::path::PathBuf::from(super::get_env("workdir".to_string()).await?);
+    let path = workdir.join(path.as_str()).join(name.as_str());
     let path = std::path::Path::new(&path);
     match flag.as_str() {
         "folder" => std::fs::remove_dir_all(path).map_err(|e| e.to_string())?,
