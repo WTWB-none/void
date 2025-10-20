@@ -1,0 +1,37 @@
+[workspace]
+resolver = "3"
+
+members = [
+  "crates/void_core",
+  "crates/void_ui",
+  "crates/void_components",
+  "crates/void_db",
+  "crates/void_extensions",
+  "crates/void_theming",
+  "crates/void_router",
+  "crates/void_entities",
+  "crates/void_errors",
+  "crates/void_app"]
+
+[workspace.package]
+publish = false
+edition = "2024"
+style_edition = "2024"
+name = "void-v2"
+
+[workspace.dependencies]
+void_core = { path = "crates/void_core" }
+void_ui = { path = "crates/void_ui" }
+void_components = { path = "crates/void_components" }
+void_entities = { path = "crates/void_entities" }
+void_db = { path = "crates/void_db" }
+void_extensions = { path = "crates/void_extensions" }
+void_theming = { path = "crates/void_theming" }
+void_router = { path = "crates/void_router" }
+gpui = { git = "https://github.com/zed-industries/zed"}
+simplelog = "0.12.2"
+log = "0.4.28"
+surrealdb = {version = "2.3.10", features = ["kv-rocksdb"]}
+thiserror = "2.0.17"
+
+

@@ -1,0 +1,13 @@
+[package]
+name = "void_core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dirs-next = "2.0.0"
+rustix = {version = "1.1.2", features = ["fs"]}
+dircpy = "0.3.19"
+simplelog.workspace = true
+log.workspace = true
+void_entities.workspace = true
+thiserror.workspace = true

@@ -1,0 +1,19 @@
+[package]
+name = "void_app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+void_db = {path = "../void_db"}
+void_entities.workspace = true
+void_components.workspace = true
+
+[package.metadata.bundle]
+name = "VOID"
+identifier = "org.transhumanist.void"
+version = "0.1.0"
+
+[[bin]]
+name = "VOID"
+path = "src/main.rs"
+

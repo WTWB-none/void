@@ -1,0 +1,12 @@
+[package]
+name = "void_db"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+surrealdb = {version = "2.3.10", features=["kv-rocksdb"]}
+tokio = "1.47.1"
+void_core.workspace = true
+gpui.workspace = true
+simplelog.workspace = true
+log.workspace = true

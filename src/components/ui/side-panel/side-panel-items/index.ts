@@ -1,1 +1,0 @@
-export const pluginRegistry: string[] = ["Home", "Graph", "Code", "Canvas"];

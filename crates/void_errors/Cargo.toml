@@ -1,0 +1,8 @@
+[package]
+version = "0.1.0"
+publish.workspace = true
+edition.workspace = true
+style_edition.workspace = true
+name = "void_errors"
+
+[dependencies]

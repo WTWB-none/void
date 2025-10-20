@@ -1,0 +1,7 @@
+[package]
+name = "void_theming"
+version = "0.1.0"
+publish.workspace = true
+edition.workspace = true
+
+[dependencies]
