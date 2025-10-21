@@ -5,7 +5,7 @@ use std::{
     fs::{create_dir, read_dir, remove_dir_all},
     path::PathBuf,
 };
-use void_entities::GlobalConfig;
+use void_entities::config::GlobalConfig;
 
 /// # simple safe function that gets content of specific directory
 /// returns vector of PathBuf which represents all items in chosen directory
@@ -13,7 +13,7 @@ use void_entities::GlobalConfig;
 /// can return FsError::ScopeNotAllowed or FsError::GetError(_s) where _s is the reason why this
 /// function returned error
 /// ```
-/// use void_entities::GlobalConfig;
+/// use void_entities::config::GlobalConfig;
 /// use void_core::filesystem::directories::get_dir_content;
 /// use std::path::PathBuf;
 ///
@@ -37,7 +37,7 @@ pub fn get_dir_content(config: &mut GlobalConfig, dir: &PathBuf) -> Result<Vec<P
 /// Error could be FsError::ScopeNotAllowed or FsError::GetError(_s) where _s is the reason why
 /// this function returned error
 /// ```
-/// use void_entities::GlobalConfig;
+/// use void_entities::config::GlobalConfig;
 /// use void_core::filesystem::directories::{create_subdir, delete_subdir};
 /// use std::path::PathBuf;
 ///
@@ -62,7 +62,7 @@ pub fn create_subdir(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), Fs
 /// Error could be FsError::ScopeNotAllowed and FsError::MoveError(_s) where _s is the reason why
 /// this function returned error
 /// ```
-/// use void_entities::GlobalConfig;
+/// use void_entities::config::GlobalConfig;
 /// use void_core::filesystem::directories::move_subdir;
 /// use std::path::PathBuf;
 ///
@@ -94,7 +94,7 @@ pub fn move_subdir(
 /// Error could be FsError::ScopeNotAllowed and FsError::CopyError(_s) where _s is the reason why
 /// this function returned error
 /// ```
-/// use void_entities::GlobalConfig;
+/// use void_entities::config::GlobalConfig;
 /// use void_core::filesystem::directories::{copy_subdir, delete_subdir};
 /// use std::path::PathBuf;
 ///
@@ -124,7 +124,7 @@ pub fn copy_subdir(
 /// Error could be FsError::ScopeNotAllowed and FsError::RenameError(_s) where _s is the reason why
 /// this function returned error
 /// ```
-/// use void_entities::GlobalConfig;
+/// use void_entities::config::GlobalConfig;
 /// use void_core::filesystem::directories::rename_subdir;
 /// use std::path::PathBuf;
 ///
@@ -158,7 +158,7 @@ pub fn rename_subdir(
 /// Error could be FsError::ScopeNotAllowed and FsError::DeleteError(_s) where _s is the reason why
 /// this function returned error
 /// ```
-/// use void_entities::GlobalConfig;
+/// use void_entities::config::GlobalConfig;
 /// use void_core::filesystem::directories::{create_subdir, delete_subdir};
 /// use std::path::PathBuf;
 ///
@@ -177,7 +177,6 @@ pub fn delete_subdir(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), Fs
 mod tests {
     use super::*;
     use std::path::PathBuf;
-    use void_entities::GlobalConfig;
 
     #[test]
     fn scope_error() {

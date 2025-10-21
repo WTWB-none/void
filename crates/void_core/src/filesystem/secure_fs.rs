@@ -1,5 +1,5 @@
 use std::{fs::canonicalize, path::PathBuf};
-use void_entities::GlobalConfig;
+use void_entities::config::GlobalConfig;
 
 use crate::filesystem::fs_errors::FsError;
 

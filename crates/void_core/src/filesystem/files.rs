@@ -5,7 +5,7 @@ use std::{
     path::PathBuf,
 };
 
-use void_entities::GlobalConfig;
+use void_entities::config::GlobalConfig;
 
 use crate::filesystem::{fs_errors::FsError, secure_fs::check_scope};
 
@@ -15,7 +15,7 @@ use crate::filesystem::{fs_errors::FsError, secure_fs::check_scope};
 /// can return FsError::ScopeNotAllowed or FsError::GetError(_s) where _s is the reason why this
 /// function returned error
 ///```
-///use void_entities::GlobalConfig;
+///use void_entities::config::GlobalConfig;
 ///use void_core::filesystem::files::get_file_binary;
 ///use std::path::PathBuf;
 ///
@@ -46,7 +46,7 @@ pub fn get_file_binary(config: &mut GlobalConfig, path: &PathBuf) -> Result<Vec<
 /// can return FsError::ScopeNotAllowed or FsError::CreateError(_s) where _s is the reason why this
 /// function returned error
 ///```
-///use void_entities::GlobalConfig;
+///use void_entities::config::GlobalConfig;
 ///use void_core::filesystem::files::create_file;
 ///use std::path::PathBuf;
 ///
@@ -69,7 +69,7 @@ pub fn create_file(config: &mut GlobalConfig, name: String, path: &PathBuf) -> R
 /// can return FsError::ScopeNotAllowed or FsError::RenameError(_s) where _s is the reason why this
 /// function returned error
 ///```
-///use void_entities::GlobalConfig;
+///use void_entities::config::GlobalConfig;
 ///use void_core::filesystem::files::rename_file;
 ///use std::path::PathBuf;
 ///
@@ -100,7 +100,7 @@ pub fn rename_file(
 /// can return FsError::ScopeNotAllowed or FsError::MoveError(_s) where _s is the reason why this
 /// function returned error
 ///```
-///use void_entities::GlobalConfig;
+///use void_entities::config::GlobalConfig;
 ///use void_core::filesystem::files::move_file;
 ///use std::path::PathBuf;
 ///
@@ -131,7 +131,7 @@ pub fn move_file(
 /// can return FsError::ScopeNotAllowed or FsError::CopyError(_s) where _s is the reason why this
 /// function returned error
 ///```
-///use void_entities::GlobalConfig;
+///use void_entities::config::GlobalConfig;
 ///use void_core::filesystem::files::copy_file;
 ///use std::path::PathBuf;
 ///
@@ -159,7 +159,7 @@ pub fn copy_file(
 /// can return FsError::ScopeNotAllowed or FsError::DeleteError(_s) where _s is the reason why this
 /// function returned error
 ///```
-///use void_entities::GlobalConfig;
+///use void_entities::config::GlobalConfig;
 ///use void_core::filesystem::files::{delete_file, create_file};
 ///use std::path::PathBuf;
 ///
