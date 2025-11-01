@@ -10,7 +10,7 @@ pub struct GlobalDB {
 impl GlobalDB {
     /// database constructor. Needs awaiting.
     /// returns GlobalDB
-    /// ```
+    /// ```ignore
     /// use void_entities::GlobalDB;
     /// async fn create_database(){
     ///     let db = GlobalDB::new().await;

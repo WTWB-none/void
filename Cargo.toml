@@ -10,7 +10,6 @@ members = [
   "crates/void_theming",
   "crates/void_router",
   "crates/void_entities",
-  "crates/void_errors",
   "crates/void_app"]
 
 [workspace.package]
@@ -33,5 +32,5 @@ simplelog = "0.12.2"
 log = "0.4.28"
 surrealdb = {version = "2.3.10", features = ["kv-rocksdb"]}
 thiserror = "2.0.17"
-
-
+anyhow = "1.0.100"
+crossbeam = "0.8.4"

@@ -7,10 +7,12 @@ use crate::filesystem::fs_errors::FsError;
 /// if scope not set returns FsError::ScopeNotAllowed
 /// also returns FsError::ScopeNotAllowed if directory/file not exist. If you encounter this error create dirs first
 /// and then check scope
+/// IMPORTANT! if the file for which you check scope is not yet created please pass to this function path to parent directory in which file would be created
 pub fn check_scope(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), FsError> {
     match config.get_scope() {
         Some(s) => {
             if canonicalize(path).is_err() {
+                error!("failed to canonicalize path");
                 return Err(FsError::ScopeNotAllowed);
             }
             if path
@@ -20,11 +22,16 @@ pub fn check_scope(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), FsEr
                 .unwrap()
                 .contains(s.canonicalize().unwrap().to_str().unwrap())
             {
+                info!("allowed scope");
                 return Ok(());
             }
+            error!("fs scope usage rejected");
             Err(FsError::ScopeNotAllowed)
         }
-        None => Err(FsError::ScopeNotAllowed),
+        None => {
+            error!("fs scope usage rejected");
+            Err(FsError::ScopeNotAllowed)
+        }
     }
 }
 

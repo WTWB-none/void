@@ -12,21 +12,21 @@ use void_entities::config::GlobalConfig;
 /// requires mutable reference to global config and reference to PathBuf points to target dir
 /// can return FsError::ScopeNotAllowed or FsError::GetError(_s) where _s is the reason why this
 /// function returned error
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::filesystem::directories::get_dir_content;
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/tools/"));
 /// let vec = get_dir_content(&mut config, &PathBuf::from("/home/transhumanist/tools/")).unwrap();
 /// ```
 pub fn get_dir_content(config: &mut GlobalConfig, dir: &PathBuf) -> Result<Vec<PathBuf>, FsError> {
     check_scope(config, dir)?;
-    let entries = read_dir(dir).map_err(|e| FsError::GetError(e.to_string()))?;
+    let entries = read_dir(dir).map_err(|e| {
+        error!("failed to get directory content");
+        FsError::GetError(e.to_string())
+    })?;
     let vec_entries = entries
         .map(|entry| entry.unwrap().path())
         .collect::<Vec<PathBuf>>();
+    info!("get directory content");
     Ok(vec_entries)
 }
 
@@ -36,11 +36,7 @@ pub fn get_dir_content(config: &mut GlobalConfig, dir: &PathBuf) -> Result<Vec<P
 /// not exists
 /// Error could be FsError::ScopeNotAllowed or FsError::GetError(_s) where _s is the reason why
 /// this function returned error
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::filesystem::directories::{create_subdir, delete_subdir};
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/tools/"));
 /// create_subdir(&mut config, &PathBuf::from("/home/transhumanist/tools/test/")).unwrap();
@@ -50,7 +46,11 @@ pub fn create_subdir(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), Fs
     let mut check = path.clone();
     check.pop();
     check_scope(config, &check)?;
-    create_dir(path).map_err(|e| FsError::CreateError(e.to_string()))?;
+    create_dir(path).map_err(|e| {
+        error!("failed to create subdirectory");
+        FsError::CreateError(e.to_string())
+    })?;
+    info!("created subdirectory");
     Ok(())
 }
 
@@ -61,11 +61,7 @@ pub fn create_subdir(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), Fs
 /// moves).
 /// Error could be FsError::ScopeNotAllowed and FsError::MoveError(_s) where _s is the reason why
 /// this function returned error
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::filesystem::directories::move_subdir;
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/"));
 /// move_subdir(&mut config, &PathBuf::from("/home/transhumanist/tools/"), &PathBuf::from("/home/transhumanist/projects/tools")).unwrap();
@@ -81,8 +77,11 @@ pub fn move_subdir(
     check.pop();
     check_scope(config, old_path)?;
     check_scope(config, &check)?;
-    renameat_with(fd, old_path, fd, new_path, RenameFlags::NOREPLACE)
-        .map_err(|e| FsError::MoveError(e.to_string()))?;
+    renameat_with(fd, old_path, fd, new_path, RenameFlags::NOREPLACE).map_err(|e| {
+        error!("failed to move subdirectory");
+        FsError::MoveError(e.to_string())
+    })?;
+    info!("moved subdirectory");
     Ok(())
 }
 
@@ -93,11 +92,7 @@ pub fn move_subdir(
 /// copying).
 /// Error could be FsError::ScopeNotAllowed and FsError::CopyError(_s) where _s is the reason why
 /// this function returned error
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::filesystem::directories::{copy_subdir, delete_subdir};
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/"));
 /// copy_subdir(&mut config, &PathBuf::from("/home/transhumanist/tools/"), &PathBuf::from("/home/transhumanist/projects/tools")).unwrap();
@@ -112,8 +107,13 @@ pub fn copy_subdir(
     check.pop();
     check_scope(config, target_path)?;
     check_scope(config, &check)?;
-    copy_dir_advanced(target_path, dest_path, false, false, false, vec![], vec![])
-        .map_err(|e| FsError::CopyError(e.to_string()))?;
+    copy_dir_advanced(target_path, dest_path, false, false, false, vec![], vec![]).map_err(
+        |e| {
+            error!("failed to copy subdirectory");
+            FsError::CopyError(e.to_string())
+        },
+    )?;
+    info!("copied subdirectory");
     Ok(())
 }
 
@@ -123,18 +123,13 @@ pub fn copy_subdir(
 /// will be renamed and new name
 /// Error could be FsError::ScopeNotAllowed and FsError::RenameError(_s) where _s is the reason why
 /// this function returned error
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::filesystem::directories::rename_subdir;
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/"));
 /// rename_subdir(&mut config, &PathBuf::from("/home/transhumanist/tools/rename_dir"),
 /// String::from("renamed_dir")).unwrap();
 /// rename_subdir(&mut config, &PathBuf::from("/home/transhumanist/tools/renamed_dir"),
 /// String::from("rename_dir")).unwrap();
-///
 /// ```
 pub fn rename_subdir(
     config: &mut GlobalConfig,
@@ -146,8 +141,11 @@ pub fn rename_subdir(
     let mut new_path = old_path.clone();
     new_path.pop();
     new_path = new_path.join(new_name);
-    renameat_with(fd, old_path, fd, new_path, RenameFlags::NOREPLACE)
-        .map_err(|e| FsError::RenameError(e.to_string()))?;
+    renameat_with(fd, old_path, fd, new_path, RenameFlags::NOREPLACE).map_err(|e| {
+        error!("failed to rename subdir");
+        FsError::RenameError(e.to_string())
+    })?;
+    info!("renamed subdirectory");
     Ok(())
 }
 
@@ -157,11 +155,7 @@ pub fn rename_subdir(
 /// will be deleted
 /// Error could be FsError::ScopeNotAllowed and FsError::DeleteError(_s) where _s is the reason why
 /// this function returned error
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::filesystem::directories::{create_subdir, delete_subdir};
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/"));
 /// create_subdir(&mut config, &PathBuf::from("/home/transhumanist/tools/to_delete/")).unwrap();
@@ -169,7 +163,11 @@ pub fn rename_subdir(
 /// ```
 pub fn delete_subdir(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), FsError> {
     check_scope(config, path)?;
-    remove_dir_all(path).map_err(|e| FsError::DeleteError(e.to_string()))?;
+    remove_dir_all(path).map_err(|e| {
+        error!("failed to delete subdir");
+        FsError::DeleteError(e.to_string())
+    })?;
+    info!("deleted subdirectory");
     Ok(())
 }
 
@@ -184,5 +182,97 @@ mod tests {
         config.change_scope(PathBuf::from("/home/transhumanist/tools/"));
         let vec = get_dir_content(&mut config, &PathBuf::from("/home/transhumanist/"));
         assert_eq!(FsError::ScopeNotAllowed, vec.err().unwrap());
+    }
+
+    #[test]
+    fn get_dir() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/tools/"));
+        get_dir_content(&mut config, &PathBuf::from("/home/transhumanist/tools/")).unwrap();
+    }
+
+    #[test]
+    fn create_dir() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/tools/"));
+        create_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/test/"),
+        )
+        .unwrap();
+        delete_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/test/"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn move_dir() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/"));
+        move_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/move_dir"),
+            &PathBuf::from("/home/transhumanist/projects/move_dir"),
+        )
+        .unwrap();
+        move_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/projects/move_dir/"),
+            &PathBuf::from("/home/transhumanist/tools/move_dir"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn copy_dir() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/"));
+        copy_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/copy_dir/"),
+            &PathBuf::from("/home/transhumanist/projects/copy_dir/"),
+        )
+        .unwrap();
+        delete_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/projects/copy_dir/"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn rename_dir() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/"));
+        rename_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/rename_dir"),
+            String::from("renamed_dir"),
+        )
+        .unwrap();
+        rename_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/renamed_dir"),
+            String::from("rename_dir"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn delete_dir() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/"));
+        create_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/to_delete/"),
+        )
+        .unwrap();
+        delete_subdir(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/tools/to_delete/"),
+        )
+        .unwrap();
     }
 }

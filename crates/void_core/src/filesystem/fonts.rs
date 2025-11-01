@@ -4,14 +4,11 @@ use std::{
     path::PathBuf,
 };
 
-use crate::filesystem::config::get_config_folder;
+use crate::filesystem::{config::get_config_folder, fs_errors::FsError};
 
 /// # basic utility that returns Vec of PathBuf with all fonts in th e fonts directory
 /// if fonts dir not present in config folder creates new and returns empty vec![]
-/// ```
-/// use std::path::PathBuf;
-/// use void_core::filesystem::fonts::get_fonts;
-///
+/// ```ignore
 /// let fonts = get_fonts();
 /// assert_eq!(Vec::<PathBuf>::new(), fonts);
 /// ```
@@ -30,17 +27,35 @@ pub fn get_fonts() -> Vec<PathBuf> {
 /// # function that allows adding user fonts to VOID. I think that it wouldn't panic, but if it
 /// would, please report an issue to our repo
 /// returns error if not font file path provided
-pub fn add_font(font_path: PathBuf) -> Result<(), String> {
+pub fn add_font(font_path: PathBuf) -> Result<(), FsError> {
     let fonts_folder = get_config_folder(Some("fonts"));
     match font_path.extension() {
         Some(s) => {
             if s.to_str() != Some("ttf") {
-                return Err("not walid file provided".to_string());
+                error!("invalid font provided");
+                return Err(FsError::MoveError("not valid file provided".to_string()));
             }
         }
-        None => return Err("not walid file provided".to_string()),
+        None => {
+            error!("invalid font provided");
+            return Err(FsError::MoveError("not valid file provided".to_string()));
+        }
     }
     let font_name = font_path.clone().file_name().unwrap().to_owned();
-    rename(font_path, fonts_folder.join(font_name)).map_err(|e| e.to_string())?;
+    rename(font_path, fonts_folder.join(font_name)).map_err(|e| {
+        error!("failed to move font");
+        FsError::MoveError(e.to_string())
+    })?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_fonts_list() {
+        let fonts = get_fonts();
+        assert_eq!(Vec::<PathBuf>::new(), fonts);
+    }
 }

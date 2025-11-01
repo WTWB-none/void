@@ -8,11 +8,7 @@ use void_entities::{audio::AudioMetadata, config::GlobalConfig};
 /// requires mutable reference to GlobalConfig and PathBuf reference that points to audio file
 /// returnes lofty TaggedFile for later manipulations or FsError::GetError(_s) where _s is exact
 /// error that internal process returned
-/// ```
-/// use void_entities::config::GlobalConfig;
-/// use void_core::audio::get_audio;
-/// use std::path::PathBuf;
-///
+/// ```ignore
 /// let mut config = GlobalConfig::default();
 /// config.change_scope(PathBuf::from("/home/transhumanist/Downloads"));
 /// let vec = get_audio(&mut config, &PathBuf::from("/home/transhumanist/Downloads/01.DearDiary.flac")).unwrap();
@@ -28,7 +24,7 @@ pub fn get_audio(
         .map_err(|e| FsError::GetError(e.to_string()))?
         .read()
         .map_err(|e| FsError::GetError(e.to_string()))?;
-    let mut meta = get_metadata(_file_to_metadata).map_err(|e| FsError::GetError(e.to_string()))?;
+    let mut meta = get_metadata(_file_to_metadata);
     meta.file(
         fs::read(audio_path)
             .map_err(|e| FsError::GetError(e.to_string()))?
@@ -36,4 +32,19 @@ pub fn get_audio(
     );
 
     Ok(meta)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn read_audio() {
+        let mut config = GlobalConfig::default();
+        config.change_scope(PathBuf::from("/home/transhumanist/Downloads"));
+        get_audio(
+            &mut config,
+            &PathBuf::from("/home/transhumanist/Downloads/01.DearDiary.flac"),
+        )
+        .unwrap();
+    }
 }

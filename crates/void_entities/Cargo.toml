@@ -6,4 +6,9 @@ style_edition.workspace = true
 name = "void_entities"
 
 [dependencies]
+simplelog.workspace = true
+log.workspace = true
 surrealdb.workspace = true
+anyhow.workspace = true
+cpal = "0.16.0"
+hound = "3.5.1"

@@ -3,13 +3,11 @@ use std::path::PathBuf;
 
 /// # Setups config dir at first run
 /// requires vec of subdirectories that will be created under .config/void/folder
-/// ```
-/// use void_core::filesystem::config::init_config_folder;
+/// ```ignore
 /// let config = init_config_folder(vec!["db", "plugns", "themes", "fonts"]);
 /// ```
 /// if you want to create config dir without nested directories you can do it like this:
-/// ```
-/// use void_core::filesystem::config::init_config_folder;
+/// ```ignore
 /// let config = init_config_folder(vec![]);
 /// ```
 pub fn init_config_folder(config_subdirs: Vec<&'static str>) {
@@ -33,8 +31,7 @@ pub fn init_config_folder(config_subdirs: Vec<&'static str>) {
 /// # returns PathBuf to current config folder or creates it if not exist.
 /// it could return error if config folder is not initialized
 /// requires Option subpath to get subdirectories under config folder
-/// ```
-/// use void_core::filesystem::config::get_config_folder;
+/// ```ignore
 /// //void_core.init_config_dir();
 /// get_config_folder(None); //returns PathBuf
 /// ```
@@ -68,5 +65,20 @@ mod tests {
         let test_path = home_dir().unwrap().join(".config").join("void");
         init_config_folder(vec!["test", "test", "test"]);
         std::fs::remove_dir_all(&test_path).unwrap();
+    }
+
+    #[test]
+    fn init_config_folder_with_subdir() {
+        init_config_folder(vec!["db", "plugns", "themes", "fonts"]);
+    }
+
+    #[test]
+    fn init_config_folder_without_subdir() {
+        init_config_folder(vec![]);
+    }
+
+    #[test]
+    fn getter_config_folder() {
+        get_config_folder(None);
     }
 }
