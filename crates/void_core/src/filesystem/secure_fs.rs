@@ -1,5 +1,11 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use std::{fs::canonicalize, path::PathBuf};
-use void_entities::config::GlobalConfig;
+use void_config::GlobalConfig;
 
 use crate::filesystem::fs_errors::FsError;
 

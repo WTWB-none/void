@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]

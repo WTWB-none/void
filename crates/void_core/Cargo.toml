@@ -2,14 +2,16 @@
 name = "void_core"
 version = "0.1.0"
 edition = "2024"
+license.workspace = true
 
 [dependencies]
-dirs-next = "2.0.0"
-rustix = {version = "1.1.2", features = ["fs"]}
-dircpy = "0.3.19"
-lofty = "0.22.4"
 crossbeam.workspace = true
-simplelog.workspace = true
+dircpy = "0.3.19"
+dirs-next = "2.0.0"
+lofty = "0.22.4"
 log.workspace = true
-void_entities.workspace = true
+rustix = { version = "1.1.2", features = ["fs"] }
+simplelog.workspace = true
 thiserror.workspace = true
+void_audio.workspace = true
+void_config.workspace = true

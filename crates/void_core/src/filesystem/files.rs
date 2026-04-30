@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use rustix::fs::{CWD, RenameFlags, renameat_with};
 use std::{
     fs::{File, copy, remove_file, write},
@@ -5,7 +11,7 @@ use std::{
     path::PathBuf,
 };
 
-use void_entities::config::GlobalConfig;
+use void_config::GlobalConfig;
 
 use crate::filesystem::{fs_errors::FsError, secure_fs::check_scope};
 

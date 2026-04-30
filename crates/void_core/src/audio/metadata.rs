@@ -1,8 +1,14 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use lofty::{
     file::{AudioFile, TaggedFile, TaggedFileExt},
     tag::Accessor,
 };
-use void_entities::audio::AudioMetadata;
+use void_audio::AudioMetadata;
 
 /// # simple function that extracts metadata from audio file
 /// this function can only be visible inside audio crate. Basically if you need some of file metadata

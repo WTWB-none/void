@@ -1,8 +1,15 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use super::metadata::get_metadata;
 use crate::filesystem::{fs_errors::FsError, secure_fs::check_scope};
 use lofty::probe::Probe;
 use std::{fs, path::PathBuf};
-use void_entities::{audio::AudioMetadata, config::GlobalConfig};
+use void_audio::AudioMetadata;
+use void_config::GlobalConfig;
 
 /// # simple safe function that reads audio file
 /// requires mutable reference to GlobalConfig and PathBuf reference that points to audio file

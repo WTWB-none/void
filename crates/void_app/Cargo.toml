@@ -2,11 +2,7 @@
 name = "void_app"
 version = "0.1.0"
 edition = "2024"
-
-[dependencies]
-void_db = {path = "../void_db"}
-void_entities.workspace = true
-void_components.workspace = true
+license.workspace = true
 
 [package.metadata.bundle]
 name = "VOID"
@@ -17,3 +13,7 @@ version = "0.1.0"
 name = "VOID"
 path = "src/main.rs"
 
+[dependencies]
+gpui.workspace = true
+void_components.workspace = true
+void_db = { path = "../void_db" }

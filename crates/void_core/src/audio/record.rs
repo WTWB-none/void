@@ -1,7 +1,14 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use crate::audio::recorder_errors::RecorderError;
 use crate::filesystem::secure_fs::check_scope;
 use std::path::PathBuf;
-use void_entities::{audio::recorder::Recorder, config::GlobalConfig};
+use void_audio::recorder::Recorder;
+use void_config::GlobalConfig;
 
 /// # small function that initialize recorder instance for later usage.
 /// It requires PathBuf that points to new file in which recording will be saved.
@@ -42,7 +49,7 @@ pub fn stop_record(recorder: &mut Recorder) -> Result<(), RecorderError> {
 #[cfg(test)]
 mod tests {
     use std::{thread::sleep, time::Duration};
-    use void_entities::config::GlobalConfig;
+    use void_config::GlobalConfig;
 
     use crate::filesystem::files::delete_file;
 

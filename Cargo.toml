@@ -1,36 +1,46 @@
 [workspace]
 resolver = "3"
 
-members = [
-  "crates/void_core",
-  "crates/void_ui",
+members = ["crates/plugin_api",
+  "crates/repo_manager",
+  "crates/void_app",
+  "crates/void_audio",
   "crates/void_components",
+  "crates/void_config",
+  "crates/void_core",
   "crates/void_db",
   "crates/void_extensions",
-  "crates/void_theming",
   "crates/void_router",
-  "crates/void_entities",
-  "crates/void_app"]
+  "crates/void_theming",
+  "crates/void_ui"
+]
 
 [workspace.package]
-publish = false
 edition = "2024"
-style_edition = "2024"
-name = "void-v2"
+license = "GPL-3.0-or-later"
+publish = false
 
 [workspace.dependencies]
-void_core = { path = "crates/void_core" }
-void_ui = { path = "crates/void_ui" }
+anyhow = "1.0.102"
+async-trait = "0.1.89"
+crossbeam = "0.8.4"
+gpui = { git = "https://github.com/zed-industries/zed" }
+log = "0.4.29"
+repo_manager = { path = "crates/repo_manager" }
+serde = "1.0.228"
+serde_json = "1.0.149"
+serial_test = "3.4.0"
+simplelog = "0.12.2"
+surrealdb = { version = "3.0.5", features = ["kv-rocksdb"] }
+tempfile = "3.27.0"
+thiserror = "2.0.18"
+tokio = "1.51.1"
+void_audio = { path = "crates/void_audio" }
 void_components = { path = "crates/void_components" }
-void_entities = { path = "crates/void_entities" }
+void_config = { path = "crates/void_config" }
+void_core = { path = "crates/void_core" }
 void_db = { path = "crates/void_db" }
 void_extensions = { path = "crates/void_extensions" }
-void_theming = { path = "crates/void_theming" }
 void_router = { path = "crates/void_router" }
-gpui = { git = "https://github.com/zed-industries/zed"}
-simplelog = "0.12.2"
-log = "0.4.28"
-surrealdb = {version = "2.3.10", features = ["kv-rocksdb"]}
-thiserror = "2.0.17"
-anyhow = "1.0.100"
-crossbeam = "0.8.4"
+void_theming = { path = "crates/void_theming" }
+void_ui = { path = "crates/void_ui" }

@@ -31,8 +31,8 @@ Jump in, share your ideas, and help shape the future of VOID!
 ### 1. Clone the repository
 
 ```bash
-git clone  --branch gpui-future https://github.com/WTWB-none/void.git
-cd void
+git clone https://codeberg.org/Transhumanist/VOID-v2.git
+cd VOID-v2
 ```
 
 ### 2. Run the app in development mode
@@ -73,4 +73,4 @@ You can check our updates in
 
 ## 📄 License
 
-This project is licensed under the [Apache License 2.0](https://github.com/WTWB-none/void/blob/main/LICENSE.md).
+This project is licensed under the GNU GPLv3. For more information, see [LICENSE](./LICENSE).

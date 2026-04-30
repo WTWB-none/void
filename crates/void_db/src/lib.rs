@@ -2,6 +2,9 @@
 extern crate log;
 extern crate simplelog;
 
-mod modules;
+pub mod database;
+pub mod initialization;
+pub mod interfaces;
 
-pub use modules::*;
+mod errors;
+pub use errors::*;

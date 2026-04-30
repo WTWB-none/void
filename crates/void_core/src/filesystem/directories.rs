@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+use super::files::delete_file;
 use crate::filesystem::{fs_errors::FsError, secure_fs::check_scope};
 use dircpy::copy_dir_advanced;
 use rustix::fs::{RenameFlags, renameat_with};
@@ -5,7 +12,7 @@ use std::{
     fs::{create_dir, read_dir, remove_dir_all},
     path::PathBuf,
 };
-use void_entities::config::GlobalConfig;
+use void_config::GlobalConfig;
 
 /// # simple safe function that gets content of specific directory
 /// returns vector of PathBuf which represents all items in chosen directory
@@ -168,6 +175,18 @@ pub fn delete_subdir(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), Fs
         FsError::DeleteError(e.to_string())
     })?;
     info!("deleted subdirectory");
+    Ok(())
+}
+
+pub fn delete_subdir_content(config: &mut GlobalConfig, path: &PathBuf) -> Result<(), FsError> {
+    check_scope(config, path)?;
+    let content = get_dir_content(config, path)?;
+    for entry in content {
+        match entry.is_file() {
+            true => delete_file(config, &entry)?,
+            false => delete_subdir(config, &entry)?,
+        }
+    }
     Ok(())
 }
 

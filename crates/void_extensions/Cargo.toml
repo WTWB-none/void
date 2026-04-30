@@ -2,5 +2,13 @@
 name = "void_extensions"
 version = "0.1.0"
 edition = "2024"
+license.workspace = true
 
 [dependencies]
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+surrealdb.workspace = true
+tempfile.workspace = true
+tokio.workspace = true
+void_db.workspace = true

@@ -1,5 +1,12 @@
+/*
+ * Copyright (C) 2026 Shelkonogov Egor (Paradoxxa) <ghostoftranshumanist@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 use dirs_next::home_dir;
 use std::path::PathBuf;
+use void_config::GlobalConfig;
 
 /// # Setups config dir at first run
 /// requires vec of subdirectories that will be created under .config/void/folder
@@ -54,6 +61,14 @@ pub fn get_config_folder(subpath: Option<&'static str>) -> PathBuf {
             }
         },
     }
+}
+
+/// # function for getting scope for features that require config manipulation
+/// returns GlobalConfig struct with default config folder as scope
+pub fn get_default_config_scope() -> GlobalConfig {
+    let mut config = GlobalConfig::default();
+    config.change_scope(get_config_folder(None));
+    config
 }
 
 #[cfg(test)]
